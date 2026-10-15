@@ -37,13 +37,13 @@ jobs:
 
       - name: Version
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            V="${{ github.event.release.tag_name }}"; V="${V#v}"
-          else
-            V="1.0-dev.${{ github.run_number }}"
-          fi
-          echo "NORTEST_VERSION_NAME=$V" >> "$GITHUB_ENV"
-          echo "NORTEST_VERSION_CODE=$(( ${{ github.run_number }} + 1 ))" >> "$GITHUB_ENV"
+          # versionCode / versionName come from version.properties (so the in-app updater can compare them).
+          VC=$(grep '^versionCode=' version.properties | cut -d= -f2 | tr -d '[:space:]')
+          VN=$(grep '^versionName=' version.properties | cut -d= -f2 | tr -d '[:space:]')
+          if [ "${{ github.event_name }}" != "release" ]; then VN="$VN-dev.${{ github.run_number }}"; fi
+          echo "NORTEST_VERSION_NAME=$VN" >> "$GITHUB_ENV"
+          echo "NORTEST_VERSION_CODE=$VC" >> "$GITHUB_ENV"
+          echo "Building versionCode=$VC versionName=$VN"
 
       - name: Test, lint and build
         env:

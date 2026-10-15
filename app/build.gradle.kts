@@ -15,6 +15,13 @@ fun signingValue(env: String, prop: String): String? =
     System.getenv(env)?.takeIf { it.isNotBlank() } ?: ksProps.getProperty(prop)
 
 val ksFile = signingValue("NORTEST_KEYSTORE_FILE", "storeFile")
+
+// The app's version lives in version.properties (bump it for every release, and bump
+// versions.json on oliver-apps.sites.tab.bot to match, so installed apps offer the update).
+val versionProps = Properties().apply {
+    val f = rootProject.file("version.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
 val hasReleaseKey = ksFile != null && file(ksFile).exists()
 
 android {
@@ -25,8 +32,8 @@ android {
         applicationId = "com.olivercraftboy.nortest"
         minSdk = 24
         targetSdk = 34
-        versionCode = (System.getenv("NORTEST_VERSION_CODE") ?: "1").toInt()
-        versionName = System.getenv("NORTEST_VERSION_NAME") ?: "1.0"
+        versionCode = (System.getenv("NORTEST_VERSION_CODE")?.takeIf { it.isNotBlank() } ?: versionProps.getProperty("versionCode", "1")).toInt()
+        versionName = System.getenv("NORTEST_VERSION_NAME")?.takeIf { it.isNotBlank() } ?: versionProps.getProperty("versionName", "1.0")
     }
 
     signingConfigs {
@@ -70,4 +77,5 @@ dependencies {
     implementation("androidx.media:media:1.7.0")
     implementation("androidx.webkit:webkit:1.11.0")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20231013")
 }

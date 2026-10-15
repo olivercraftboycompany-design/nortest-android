@@ -49,8 +49,22 @@ automatically. Either:
 
 ## Updating
 
-Download the newest APK from the same link and install it over the top. Your songs stay;
-every release is signed with the same key.
+From v1.1 on, Nortest tells you when there is a new version: you get an "Update available"
+pop-up when you open it (it checks at most every 6 hours), tap **Update**, and it downloads
+and opens the installer. The first time, Android asks you to allow installs from Nortest
+(turn on **Allow from this source**, then come back). You can also long-press the Nortest
+icon and tap **Check for updates**. Your songs stay; every release is signed with the same key.
+
+(v1.0 does not have the checker, so going from 1.0 to 1.1 is one manual install from the link above.)
+
+### Releasing a new version (for whoever maintains this)
+
+1. Bump `versionCode` (+1) and `versionName` in `version.properties`, commit.
+2. Publish a GitHub release tagged `v<versionName>`. The workflow builds, signs (same key, from
+   the repo secrets) and attaches `Nortest.apk`. Check it downloaded and its versionCode.
+3. Then bump `com.olivercraftboy.nortest` (versionCode, versionName, notes) in the shared
+   https://oliver-apps.sites.tab.bot/versions.json (see the oliver-apps README). Its url stays
+   `.../releases/latest/download/Nortest.apk`. Installed apps offer the update from then on.
 
 ## How it works (for the curious)
 

@@ -8,3 +8,5 @@ local.properties
 .idea/
 *.iml
 captures/
+keystore.properties
+build.log

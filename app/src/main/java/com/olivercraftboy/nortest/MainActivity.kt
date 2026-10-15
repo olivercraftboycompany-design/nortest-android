@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Message
@@ -36,11 +37,14 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val HOST = "appassets.androidplatform.net"
         const val START_URL = "https://$HOST/assets/www/index.html"
+        const val UPDATE_URL = "https://oliver-apps.sites.tab.bot/versions.json"
     }
 
     private lateinit var root: FrameLayout
     private var webView: WebView? = null
     private var fileCallback: ValueCallback<Array<Uri>>? = null
+    private var updater: AppUpdater? = null
+    private var manualUpdateCheck = false
 
     private val assetLoader by lazy {
         WebViewAssetLoader.Builder()
@@ -77,6 +81,14 @@ class MainActivity : ComponentActivity() {
 
         PlaybackService.start(this)
         requestNotificationPermission()
+
+        // In-app updates from the shared version manifest (see README "Updating").
+        updater = try {
+            AppUpdater(this, UPDATE_URL, installedVersionCode(), BuildConfigCompat.versionName(this), getString(R.string.app_name),
+                ContextCompat.getColor(this, R.color.brand), Color.rgb(0x16, 0x18, 0x20))
+        } catch (_: Throwable) { null }
+        AppUpdater.publishShortcut(this, R.drawable.ic_update)
+        if (intent?.action == AppUpdater.ACTION_CHECK_UPDATES) manualUpdateCheck = true
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -207,6 +219,21 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        if (intent.action == AppUpdater.ACTION_CHECK_UPDATES) manualUpdateCheck = true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        try {
+            val u = updater ?: return
+            if (manualUpdateCheck) { manualUpdateCheck = false; u.checkNow() } else u.onResume()
+        } catch (_: Throwable) { }
+    }
+
+    private fun installedVersionCode(): Long {
+        val info = packageManager.getPackageInfo(packageName, 0)
+        @Suppress("DEPRECATION")
+        return if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()
     }
 
     // Note: we deliberately do NOT call webView.onPause()/pauseTimers() in onPause/onStop,

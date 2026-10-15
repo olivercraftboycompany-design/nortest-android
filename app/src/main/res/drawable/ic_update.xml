@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Check for updates" shortcut icon: a download arrow on a round tile. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path android:fillColor="#FF2B2F3A" android:pathData="M24,0A24,24 0,1 1,23.99,0Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M22,12h4v13.2l4.6,-4.6 2.8,2.8L24,32.8l-9.4,-9.4 2.8,-2.8 4.6,4.6Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M14,34h20v3.5H14Z" />
+</vector>
