@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>nortest</title>
+<meta name="theme-color" content="#08090d">
+<meta name="description" content="nortest music player">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="nortest">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg"><i></i><i></i><i></i></div>
+
+<div id="app">
+  <aside class="glass side">
+    <h1>nortest</h1>
+    <nav id="nav"></nav>
+  </aside>
+  <section class="main">
+    <header class="glass top">
+      <input id="search" type="search" placeholder="Search songs, artists, albums">
+      <button class="btn" data-a="upload">Upload songs</button>
+      <button class="btn" data-a="fs">Full screen</button>
+      <button class="btn" data-a="settings">Settings</button>
+      <button class="btn pri hid" id="installBtn" type="button">Install app</button>
+    </header>
+    <main id="view"></main>
+  </section>
+</div>
+
+<div id="mini" class="glass">
+  <div id="mProg"><i></i></div>
+  <img id="mArt" data-a="open" alt="">
+  <div class="mi" data-a="open">
+    <b id="mT">Nothing playing</b>
+    <span id="mA"></span>
+    <em class="out"></em>
+  </div>
+  <div class="mc">
+    <button class="ib" data-a="prev" id="mp" aria-label="Previous"></button>
+    <button class="ib" data-a="toggle" id="mpl" aria-label="Play or pause"></button>
+    <button class="ib" data-a="next" id="mn" aria-label="Next"></button>
+  </div>
+</div>
+
+<div id="big">
+  <div class="bbg"></div>
+  <div class="bw glass">
+    <div class="bt hl">
+      <button class="btn" data-a="close">Close</button>
+      <em class="out"></em>
+      <button class="btn" data-a="side">Sideways mode</button>
+    </div>
+    <div class="bm">
+      <div class="artw"><img id="bArt" alt=""></div>
+      <div class="bc">
+        <div class="ti">
+          <div><h2 id="bT"></h2><p id="bA"></p><small id="bAl"></small></div>
+          <button class="ib hrt hl" data-a="fav" id="bH" aria-label="Favorite"></button>
+        </div>
+        <div class="hl">
+          <div class="pr"><span id="cur">0:00</span><input id="seek" type="range" min="0" max="100" step="0.1" value="0"><span id="dur">0:00</span></div>
+          <div class="tr">
+            <button class="btn" data-a="b10">-10s</button>
+            <button class="ib" data-a="prev" id="bp" aria-label="Previous"></button>
+            <button class="ib big" data-a="toggle" id="bpl" aria-label="Play or pause"></button>
+            <button class="ib" data-a="next" id="bn" aria-label="Next"></button>
+            <button class="btn" data-a="f10">+10s</button>
+          </div>
+          <div class="vr"><span>Volume</span><input id="vol" type="range" min="0" max="1" step="0.01" value="1"></div>
+          <div class="bb">
+            <button class="btn" data-a="shuf" id="bShuf">Shuffle</button>
+            <button class="btn" data-a="rep" id="bRep">Repeat: off</button>
+            <button class="btn" data-a="lyr">Lyrics</button>
+            <button class="btn" data-a="qp">Queue</button>
+          </div>
+        </div>
+        <div id="lyr"><button class="btn" data-a="lyrx">X</button><pre id="lt"></pre></div>
+      </div>
+    </div>
+  </div>
+  <div id="qp" class="glass"></div>
+</div>
+
+<div id="mod" class="hid"><div class="glass mb" id="mb"></div></div>
+<div id="menu" class="glass hid"></div>
+<input id="file" type="file" accept="audio/*" multiple hidden>
+<audio id="au" preload="metadata"></audio>
+
+<script src="jsmediatags.min.js"></script>
+<script src="app.js"></script>
+  <script>
+/* Tab remote control */
+(() => {
+  const TOPIC = 'nortest-7013d8b424a21d78';
+  const status = () => {
+    const s = cur;
+    const txt = s
+      ? `${s.title} — ${s.artist} (${fmt(au.currentTime)}/${fmt(au.duration || s.dur)}) ${au.paused ? 'paused' : 'playing'}, repeat:${['off', 'all', 'one', 'once'][S.rep] || 'off'}, shuffle:${S.shuf ? 'on' : 'off'}, vol:${Math.round(au.volume * 100)}`
+      : `nothing playing, repeat:${['off', 'all', 'one', 'once'][S.rep] || 'off'}, shuffle:${S.shuf ? 'on' : 'off'}`;
+    fetch('https://ntfy.sh/' + TOPIC + '-status', { method: 'POST', body: txt }).catch(() => {});
+  };
+  const run = c => {
+    if (c === 'pause') au.pause();
+    else if (c === 'play' || c === 'resume') start();
+    else if (c === 'next' || c === 'skip') next();
+    else if (c === 'prev' || c === 'back') prev();
+    else if (c.startsWith('vol ')) au.volume = Math.min(1, Math.max(0, +c.slice(4) / 100));
+    else if (c.startsWith('play ')) {
+      const q = c.slice(5);
+      const s = songs.find(s => (s.title + ' ' + s.artist).toLowerCase().includes(q));
+      if (s) { queue = songs.map(x => x.id); load(queue.indexOf(s.id)); }
+    }
+    else if (c === 'repeat') A.rep();
+    else if (/^repeat (off|all|one|once)$/.test(c)) setRep(c.slice(7));
+    else if (c === 'shuffle') A.shuf();
+    else if (c === 'shuffle on' || c === 'shuffle off') { if (S.shuf !== (c === 'shuffle on')) A.shuf(); }
+    else if (c === 'fwd') A.f10();
+    else if (c === 'rew') A.b10();
+    else if (/^seek \d+(\.\d+)?$/.test(c)) au.currentTime = +c.slice(5);
+    else if (c === 'like' || c === 'fav') { if (cur) A.fav({}); }
+    else if (c === 'now' || c === 'status') status();
+    else return;
+    if (c !== 'now' && c !== 'status') setTimeout(() => { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing'; }, 300);
+  };
+  let es, hiddenAt = 0;
+  const connect = () => {
+    try { es && es.close(); } catch {}
+    es = new EventSource('https://ntfy.sh/' + TOPIC + '/sse');
+    es.onmessage = e => {
+      let c; try { c = (JSON.parse(e.data).message || '').trim().toLowerCase(); } catch { return; }
+      run(c);
+    };
+  };
+  connect();
+  /* phones freeze the connection in the background: reconnect when the app comes back */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (!es || es.readyState !== 1 || Date.now() - hiddenAt > 20000) connect();
+  });
+  window.addEventListener('online', connect);
+  window.tabRemote = { run, status, connect };
+})();
+</script>
+  <script>
+/* ---------- Playlist: search + multi-select add ---------- */
+const pSelStyle = document.createElement('style');
+pSelStyle.textContent = `
+.mlist.sel{max-height:50vh;overflow:auto;margin:12px 0}
+.row.sel .ck{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;flex:none;color:transparent;transition:.15s}
+.row.sel.on .ck{background:var(--acc);border-color:var(--acc);color:#000}
+.row.sel.on{background:rgba(255,255,255,.08)}
+.row.sel.dis{opacity:.55;cursor:default}
+.btn:disabled{opacity:.4;pointer-events:none}
+`;
+document.head.appendChild(pSelStyle);
+
+let pSel = new Set();
+const CK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+
+const selRows = q => {
+  const p = cp();
+  return songs.filter(s => match(s, q)).map(s => {
+    const inPl = p.songs.includes(s.id), on = inPl || pSel.has(s.id);
+    return `<div class="row sel ${on ? 'on' : ''} ${inPl ? 'dis' : ''}" data-a="psel" data-id="${s.id}">
+      <span class="ck">${CK}</span><img src="${cover(s)}" alt="">
+      <div class="rm"><div><b>${esc(s.title)}</b></div><span>${esc(s.artist)}</span></div>
+      ${inPl ? '<em class="dur">In playlist</em>' : ''}</div>`;
+  }).join('') || '<p style="opacity:.6;text-align:center">No songs found.</p>';
+};
+
+const selCount = () => {
+  const b = $('#pcommit'); if (!b) return;
+  b.textContent = pSel.size ? `Add ${pSel.size} song${pSel.size > 1 ? 's' : ''}` : 'Add songs';
+  b.disabled = !pSel.size;
+};
+
+Object.assign(A, {
+  padd: () => {
+    pSel = new Set();
+    mod(`<h3>Add songs</h3>
+      <input id="ms2" type="search" placeholder="Search songs, artists, albums">
+      <div id="mres" class="mlist sel">${selRows('')}</div>
+      <div class="mrow">
+        <button class="btn" data-a="mx">Cancel</button>
+        <button class="btn" data-a="psall">Select all shown</button>
+        <button class="btn pri" id="pcommit" data-a="pcommit" disabled>Add songs</button>
+      </div>`);
+    $('#ms2').focus();
+  },
+  psel: (b, id) => {
+    if (b.classList.contains('dis')) return;
+    pSel.has(id) ? pSel.delete(id) : pSel.add(id);
+    b.classList.toggle('on', pSel.has(id));
+    selCount();
+  },
+  psall: () => {
+    const shown = [...document.querySelectorAll('#mres .row.sel:not(.dis)')];
+    const all = shown.every(r => pSel.has(r.dataset.id));   // toggle: all selected -> clear them
+    shown.forEach(r => { all ? pSel.delete(r.dataset.id) : pSel.add(r.dataset.id); r.classList.toggle('on', !all); });
+    selCount();
+  },
+  pcommit: async () => {
+    const p = cp(); if (!p || !pSel.size) return;
+    pSel.forEach(id => { if (!p.songs.includes(id)) p.songs.push(id); });
+    await put('playlists', p);
+    pSel = new Set();
+    closeMod(); render();
+  }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'ms2') $('#mres').innerHTML = selRows(e.target.value.toLowerCase().trim());
+});
+  </script>
+  <script>
+/* ---------- Synced lyrics (LRCLIB) ---------- */
+const lyrStyle = document.createElement('style');
+lyrStyle.textContent = `
+#lt.sy{padding:25vh 0}
+#lt .ll{display:block;padding:5px 0;opacity:.35;cursor:pointer;transform-origin:left center;transition:opacity .25s,transform .25s,color .25s}
+#lt .ll:hover{opacity:.7}
+#lt .ll.on{opacity:1;color:var(--acc);transform:scale(1.04)}
+`;
+document.head.appendChild(lyrStyle);
+
+const lyrTried = new Set();
+let lines = [], active = -1, holdUntil = 0;
+
+function parseLrc(t) {
+  const out = [];
+  t.split(/\r?\n/).forEach(line => {
+    const ts = [...line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
+    if (!ts.length) return;
+    const x = line.replace(/\[[^\]]*\]/g, '').trim();
+    ts.forEach(m => out.push({ t: +m[1] * 60 + +m[2], x }));
+  });
+  return out.sort((a, b) => a.t - b.t);
+}
+
+async function fetchLyrics(s) {
+  const artist = s.artist.split(/\s*[;\/]\s*/)[0];
+  const p = new URLSearchParams({ track_name: s.title, artist_name: artist });
+  if (s.album && s.album !== 'Unknown Album') p.set('album_name', s.album);
+  if (s.dur) p.set('duration', Math.round(s.dur));
+  try {
+    let r = await fetch('https://lrclib.net/api/get?' + p);
+    let d = r.ok ? await r.json() : null;
+    if (!d || !d.syncedLyrics) {
+      r = await fetch('https://lrclib.net/api/search?q=' + encodeURIComponent(s.title + ' ' + artist));
+      const arr = r.ok ? await r.json() : [];
+      d = arr.find(x => x.syncedLyrics) || d || arr[0] || null;
+    }
+    if (!d) return {};
+    return {
+      synced: d.syncedLyrics || '',
+      plain: (d.plainLyrics || (d.syncedLyrics || '').replace(/^\[[^\]]*\]\s?/gm, '')).trim()
+    };
+  } catch { return { failed: true }; }
+}
+
+function showLyrics(s, msg) {
+  const lt = $('#lt');
+  lines = s && s.synced ? parseLrc(s.synced) : [];
+  active = -1;
+  lt.classList.toggle('sy', lines.length > 0);
+  if (lines.length) {
+    lt.innerHTML = lines.map((l, i) => `<span class="ll" data-i="${i}">${esc(l.x) || '&#9834;'}</span>`).join('');
+    syncLyrics(true);
+  } else {
+    lt.textContent = s ? (s.lyrics || msg || 'No lyrics found for this song.') : '';
+  }
+}
+
+function centerLine(el, instant) {
+  const c = $('#lyr');
+  const top = el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop - c.clientHeight / 2 + el.offsetHeight / 2;
+  c.scrollTo({ top, behavior: instant ? 'auto' : 'smooth' });
+}
+
+function syncLyrics(jump) {
+  if (!lines.length) return;
+  const t = au.currentTime + 0.15;
+  let i = -1;
+  for (let k = 0; k < lines.length && lines[k].t <= t; k++) i = k;
+  if (i === active && !jump) return;
+  const els = $('#lt').children;
+  els[active]?.classList.remove('on');
+  active = i;
+  const el = els[i];
+  if (!el) return;
+  el.classList.add('on');
+  const open = $('#big').classList.contains('lyr');
+  if (jump ? open : (open && Date.now() > holdUntil)) centerLine(el, jump);
+}
+
+/* hook into the player */
+const _ui = ui;
+ui = function () {
+  _ui();
+  const s = cur;
+  showLyrics(s);
+  if (!s || s.synced || s.syncTried || lyrTried.has(s.id)) return;
+  lyrTried.add(s.id);
+  if (!s.lyrics) $('#lt').textContent = 'Searching for lyrics...';
+  fetchLyrics(s).then(r => {
+    if (r.synced) s.synced = r.synced;
+    if (!s.lyrics && r.plain) s.lyrics = r.plain;
+    if (!r.failed) s.syncTried = true;     // network error = try again next time
+    put('songs', s);                        // cache in IndexedDB
+    if (cur && cur.id === s.id) showLyrics(s);
+  });
+};
+
+au.addEventListener('timeupdate', () => syncLyrics());
+au.addEventListener('seeked', () => syncLyrics());
+
+/* snap to the current line when the lyrics panel opens */
+const _lyr = A.lyr;
+A.lyr = (...a) => { _lyr(...a); requestAnimationFrame(() => syncLyrics(true)); };
+
+/* tap a line to seek; manual scrolling pauses auto-scroll for 3s */
+document.addEventListener('click', e => {
+  const l = e.target.closest('#lt .ll');
+  if (l && lines[+l.dataset.i]) { au.currentTime = lines[+l.dataset.i].t; syncLyrics(); }
+});
+['wheel', 'touchmove'].forEach(ev =>
+  $('#lyr').addEventListener(ev, () => { holdUntil = Date.now() + 3000; }, { passive: true }));
+  </script>
+  <script>
+/* ---------- Repeat modes: off -> all -> one -> once ---------- */
+/* off  = stop at the end of the queue
+   all  = loop the whole queue
+   one  = loop this song forever (Next still skips, like Spotify)
+   once = play this song one more time, then carry on */
+const REP = ['off', 'all', 'one', 'once'];
+let repOnceUsed = false;
+const repStyle = document.createElement('style');
+repStyle.textContent = `
+#bRep{display:inline-flex;align-items:center;gap:7px}
+#bRep .ri{position:relative;display:inline-grid;place-items:center;width:18px;height:18px}
+#bRep .ri svg{width:18px;height:18px}
+#bRep .rb{position:absolute;right:-7px;top:-6px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:#06100a;color:var(--acc);font-size:9px;font-weight:800;line-height:14px;text-align:center}
+#bRep:not(.pri) .rb{display:none}
+`;
+document.head.appendChild(repStyle);
+const REP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>';
+
+/* set a repeat mode by number or name ('off' | 'all' | 'one' | 'once') */
+const setRep = m => {
+  const n = typeof m === 'number' ? m : REP.indexOf(m);
+  if (n < 0 || n > 3) return;
+  S.rep = n; repOnceUsed = false; save('S', S); modes();
+};
+
+/* every new track gets a fresh "once" */
+const _loadRep = load;
+load = function () { repOnceUsed = false; return _loadRep.apply(this, arguments); };
+
+/* what happens when a song ends */
+au.onended = () => {
+  if (S.rep === 2) { au.currentTime = 0; start(); }                                          // repeat one (loop)
+  else if (S.rep === 3 && !repOnceUsed) { repOnceUsed = true; au.currentTime = 0; start(); }  // repeat once
+  else if ((S.rep === 0 || S.rep === 3) && !S.shuf && qi === queue.length - 1) {              // end of queue: stop
+    pi(); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+  }
+  else next();                                                                                // repeat all wraps to the start
+};
+
+/* the Repeat button (and the R key) cycle through the modes */
+A.rep = () => setRep((S.rep + 1) % 4);
+
+/* button: icon + badge + label */
+const _modesRep = modes;
+modes = function () {
+  _modesRep();
+  const b = $('#bRep'), m = REP[S.rep] || 'off';
+  b.innerHTML = `<span class="ri">${REP_SVG}<span class="rb">${m === 'one' ? '1' : m === 'once' ? '+1' : ''}</span></span><span>Repeat ${m}</span>`;
+  const nextM = REP[(S.rep + 1) % 4];
+  b.title = `Repeat: ${m} (tap for ${nextM})`;
+  b.setAttribute('aria-label', b.title);
+  b.dataset.rep = m;
+};
+modes();
+  </script>
+  <script>
+/* ---------- Custom background + expanded settings ---------- */
+const bgStyle = document.createElement('style');
+bgStyle.textContent = `
+.cbg,.cdim{position:absolute;inset:0;width:100%;height:100%}
+.cbg{background-size:cover;background-position:center;object-fit:cover;transform-origin:center}
+.bg.custom i{display:none}
+.glass,#view{border-radius:var(--rad,16px)}
+.sx{margin-top:22px;padding-top:6px;border-top:1px solid var(--bd)}
+.sx h4{font-size:15px;font-weight:800;margin:14px 0 4px}
+.sx .keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;color:var(--mu);font-size:13px;margin-top:10px}
+.sx .keys b{color:var(--tx);font-weight:600}
+`;
+document.head.appendChild(bgStyle);
+
+const bgDef = { mode: 'default', color: '#0b0d14', c1: '#1b2a6b', c2: '#5a1b6b', angle: 135, url: '', dim: 0.35, blur: 0, ftype: '', fname: '' };
+const lookDef = { glass: 0.06, rad: 16 };
+const bgGet = () => (S.bg = { ...bgDef, ...S.bg });
+const lookGet = () => (S.look = { ...lookDef, ...S.look });
+let bgFileUrl = '';
+
+/* layers inside the existing .bg container */
+const bgRoot = document.querySelector('.bg');
+const bgLayer = Object.assign(document.createElement('div'), { className: 'cbg' });
+const bgVid = Object.assign(document.createElement('video'), { className: 'cbg hid', loop: true, autoplay: true, playsInline: true });
+bgVid.muted = true;
+const bgDim = Object.assign(document.createElement('div'), { className: 'cdim' });
+bgRoot.prepend(bgLayer, bgVid, bgDim);
+
+function applyBG() {
+  const b = bgGet(), l = lookGet(), m = b.mode;
+  bgRoot.classList.toggle('custom', m !== 'default');
+
+  bgLayer.style.background = ''; bgLayer.style.backgroundImage = '';
+  let media = null;
+  if (m === 'color') bgLayer.style.background = b.color;
+  else if (m === 'gradient') bgLayer.style.background = `linear-gradient(${b.angle}deg,${b.c1},${b.c2})`;
+  else if (m === 'file' && bgFileUrl) media = { src: bgFileUrl, video: (b.ftype || '').startsWith('video') };
+  else if (m === 'url' && b.url) media = { src: b.url, video: /\.(mp4|webm|ogv|mov|m4v)(\?|#|$)/i.test(b.url) };
+  else if (m === 'art' && cur) media = { src: cover(cur), video: false };
+
+  if (media && !media.video) bgLayer.style.backgroundImage = `url("${media.src.replace(/"/g, '%22')}")`;
+  if (media && media.video) {
+    if (bgVid.dataset.src !== media.src) { bgVid.dataset.src = media.src; bgVid.src = media.src; }
+    bgVid.classList.remove('hid');
+    if (bgVid.paused) bgVid.play().catch(() => { });
+  } else {
+    bgVid.classList.add('hid');
+    if (bgVid.dataset.src) { bgVid.pause(); bgVid.removeAttribute('src'); bgVid.dataset.src = ''; bgVid.load(); }
+  }
+
+  const f = b.blur ? `blur(${b.blur}px)` : '', tr = b.blur ? 'scale(1.1)' : '';
+  [bgLayer, bgVid].forEach(x => { x.style.filter = f; x.style.transform = tr; });
+  bgDim.style.background = m === 'default' ? '' : `rgba(0,0,0,${b.dim})`;
+
+  const rs = document.documentElement.style;
+  rs.setProperty('--gl', `rgba(255,255,255,${l.glass})`);
+  rs.setProperty('--rad', l.rad + 'px');
+}
+
+/* re-apply after settings load, and when the song changes (album-art mode) */
+const _applyUIBg = applyUI;
+applyUI = function () { _applyUIBg(); applyBG(); };
+const _uiBg = ui;
+ui = function () { _uiBg(); if (bgGet().mode === 'art') applyBG(); };
+
+/* restore uploaded background file */
+meta('bgFile').then(f => { if (f) { bgFileUrl = URL.createObjectURL(f); applyBG(); } });
+
+/* file picker */
+const bgInput = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/*,video/*', hidden: true });
+document.body.appendChild(bgInput);
+bgInput.onchange = async () => {
+  const f = bgInput.files[0]; bgInput.value = '';
+  if (!f) return;
+  await save('bgFile', f);
+  if (bgFileUrl) URL.revokeObjectURL(bgFileUrl);
+  bgFileUrl = URL.createObjectURL(f);
+  const b = bgGet(); b.mode = 'file'; b.ftype = f.type; b.fname = f.name;
+  save('S', S);
+  const sel = $('#bgmode'); if (sel) { sel.value = 'file'; bgVis(); }
+  const n = $('#bgname'); if (n) n.textContent = f.name;
+  applyBG();
+};
+
+/* ---------- Expanded settings ---------- */
+const bgVis = () => {
+  const sel = $('#bgmode'); if (!sel) return;
+  document.querySelectorAll('#mb .bgr').forEach(r =>
+    r.classList.toggle('hid', !(r.dataset.for === sel.value || (r.dataset.for === 'any' && sel.value !== 'default'))));
+};
+
+const extraSettings = () => {
+  const b = bgGet(), l = lookGet();
+  const modes = [['default', 'Default glow'], ['color', 'Solid color'], ['gradient', 'Gradient'], ['file', 'Image / GIF / video from device'], ['url', 'Image / video from link'], ['art', 'Current album art']];
+  return `
+<div class="sx"><h4>Background</h4>
+  <label>Type<select id="bgmode" data-bg="mode">${modes.map(([v, t]) => `<option value="${v}" ${b.mode === v ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+  <div class="bgr" data-for="color"><label>Color<input type="color" data-bg="color" value="${b.color}"></label></div>
+  <div class="bgr" data-for="gradient">
+    <label>From<input type="color" data-bg="c1" value="${b.c1}"></label>
+    <label>To<input type="color" data-bg="c2" value="${b.c2}"></label>
+    <label>Angle<input type="range" data-bg="angle" min="0" max="360" step="1" value="${b.angle}"></label>
+  </div>
+  <div class="bgr" data-for="file"><div style="display:flex;gap:12px;align-items:center;margin:14px 0">
+    <button class="btn" data-a="bgpick">Choose file</button><span id="bgname" style="color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.fname) || 'No file chosen'}</span></div></div>
+  <div class="bgr" data-for="url"><label>Link (image, GIF or mp4/webm)<input type="url" data-bg="url" placeholder="https://..." value="${esc(b.url)}"></label></div>
+  <div class="bgr" data-for="any">
+    <label>Dim<input type="range" data-bg="dim" min="0" max="0.9" step="0.01" value="${b.dim}"></label>
+    <label>Blur<input type="range" data-bg="blur" min="0" max="40" step="1" value="${b.blur}"></label>
+  </div>
+</div>
+<div class="sx"><h4>Appearance</h4>
+  <label>Glass opacity<input type="range" data-look="glass" min="0" max="0.4" step="0.01" value="${l.glass}"></label>
+  <label>Corner roundness<input type="range" data-look="rad" min="0" max="32" step="1" value="${l.rad}"></label>
+  <button class="btn" data-a="bgreset">Reset appearance</button>
+</div>
+<div class="sx"><h4>Keyboard shortcuts</h4><div class="keys">
+  <b>Space</b><span>Play / pause</span><b>Left / Right</b><span>Back / forward 10s</span>
+  <b>N / P</b><span>Next / previous</span><b>S / R</b><span>Shuffle / repeat</span>
+  <b>L</b><span>Lyrics</span><b>F</b><span>Favorite</span><b>M</b><span>Mute</span><b>Esc</b><span>Close panels</span></div>
+</div>`;
+};
+
+const _settingsBg = settings;
+settings = async function () {
+  await _settingsBg.apply(this, arguments);
+  const row = document.querySelector('#mb .mrow');
+  if (row) row.insertAdjacentHTML('beforebegin', extraSettings());
+  bgVis();
+};
+A.settings = settings;
+
+/* controls */
+const bgNum = ['angle', 'dim', 'blur'];
+const bgHandle = e => {
+  const t = e.target;
+  if (t.dataset.bg) {
+    const k = t.dataset.bg;
+    if (k === 'url' && e.type === 'input') return;          // apply links on change, not every keystroke
+    bgGet()[k] = bgNum.includes(k) ? +t.value : t.value;
+    if (k === 'mode') bgVis();
+    save('S', S); applyBG();
+  } else if (t.dataset.look) {
+    lookGet()[t.dataset.look] = +t.value;
+    save('S', S); applyBG();
+  }
+};
+document.addEventListener('input', bgHandle);
+document.addEventListener('change', bgHandle);
+
+Object.assign(A, {
+  bgpick: () => bgInput.click(),
+  bgreset: async () => {
+    if (!confirm('Reset appearance and remove the custom background?')) return;
+    delete S.bg; delete S.look; S.accent = '#1ed760'; S.blur = 24;
+    await del('meta', 'bgFile'); bgFileUrl = '';
+    save('S', S); applyUI(); settings();
+  }
+});
+applyBG();
+  </script>
+  <script src="backup.js"></script>
+  <script>
+/* ---------- Install as an app (PWA) ---------- */
+(() => {
+  if ('serviceWorker' in navigator) {
+    /* service worker disabled in the Android app (files are bundled) */
+  }
+  const btn = document.getElementById('installBtn');
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!btn || standalone) return;
+
+  const st = document.createElement('style');
+  st.textContent = `
+#iosTip{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);z-index:999;width:min(92vw,340px);padding:14px 44px 14px 16px;font-size:14px;line-height:1.45;background:rgba(20,22,30,.92)}
+#iosTip b{color:var(--acc)}
+#iosTip button{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:var(--tx);cursor:pointer;font:inherit}
+@media (max-width:700px){#installBtn{padding:9px 12px}}`;
+  document.head.appendChild(st);
+
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; btn.classList.remove('hid'); });
+  window.addEventListener('appinstalled', () => { deferred = null; btn.classList.add('hid'); });
+
+  const tip = () => {
+    if (document.getElementById('iosTip')) return;
+    const d = document.createElement('div');
+    d.id = 'iosTip'; d.className = 'glass';
+    d.innerHTML = 'To install: tap <b>Share</b> <span aria-hidden="true">&#x2191;&#xFE0E;</span> in Safari, then <b>Add to Home Screen</b>.<button type="button" aria-label="Close">&times;</button>';
+    d.querySelector('button').onclick = () => d.remove();
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 12000);
+  };
+  if (isIOS) btn.classList.remove('hid');
+
+  btn.addEventListener('click', async () => {
+    if (deferred) { deferred.prompt(); await deferred.userChoice.catch(() => {}); deferred = null; btn.classList.add('hid'); }
+    else tip();
+  });
+})();
+  </script>
+<script src="nortest-android.js"></script>
+</body>
+</html>
