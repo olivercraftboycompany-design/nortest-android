@@ -17,6 +17,14 @@ https://github.com/olivercraftboycompany-design/nortest-android/releases/latest/
 - Back button keeps the music going (the app goes to the background instead of closing).
   Swiping Nortest away in Recents stops it.
 - Backups ("Save to phone") are saved straight into your Downloads folder.
+- **All the music on your phone shows up in your library** (v1.2+). After you tap **Allow** on
+  "music and audio" access, every song on the phone is mixed into the library next to the songs you
+  imported, with a small "phone" tag. They play straight from the phone (nothing is copied), and work
+  in playlists, the queue, shuffle, favorites and the lock-screen controls. New downloads show up on
+  their own (or tap **Rescan**); songs you delete from the phone disappear. Use the
+  "All songs / Imported / On this phone" filter to see just one kind, and "Hide from library" in a
+  song's menu to hide one. Songs you already imported are not shown twice. Phone songs are not
+  included in backups (they are already on the phone).
 - Everything else is the same player: playlists, lyrics, repeat/shuffle, EQ, landscape,
   backup/restore and the Tab remote.
 
@@ -67,6 +75,13 @@ icon and tap **Check for updates**. Your songs stay; every release is signed wit
    `.../releases/latest/download/Nortest.apk`. Installed apps offer the update from then on.
 
 ## How it works (for the curious)
+
+- Phone music: `DeviceMusic.kt` scans MediaStore (on open, on Rescan, and when MediaStore changes)
+  and serves each song at `https://appassets.androidplatform.net/devicemusic/audio/<id>` (with HTTP
+  Range support, so seeking works) and its cover at `.../devicemusic/art/<id>`. The bundled `app.js`
+  merges them into `songs` with `device: true`; favorites/edits for them live in IndexedDB meta
+  `devov`, never in the songs store. Note: these app.js / backup.js changes exist only in this
+  bundled copy (the 3tbwg website is unchanged); keep them if you re-bundle the web player.
 
 - `app/src/main/assets/www/` is the nortest web player (from the `3tbwg` repo), bundled
   inside the app so it works offline. It is served from a private https address inside the

@@ -29,7 +29,7 @@
   /* ---- web -> native: song info + cover art ---- */
   var lastKey = null, lastArt = null;
   function sendArt(s) {
-    var key = s && s.cover ? String(s.id) : '';
+    var key = s && (s.cover || s.art) ? String(s.id) : '';
     if (key === lastArt) return;
     lastArt = key;
     if (!key) { N.setArt('', ''); return; }
@@ -50,7 +50,7 @@
   }
   function sendMeta() {
     var s = curSong();
-    var key = s ? [s.id, s.title, s.artist, s.album, s.cover ? 1 : 0].join('|') : '';
+    var key = s ? [s.id, s.title, s.artist, s.album, (s.cover || s.art) ? 1 : 0].join('|') : '';
     if (key !== lastKey) {
       lastKey = key;
       try { N.setMetadata(s ? (s.title || '') : '', s ? (s.artist || '') : '', s ? (s.album || '') : '', ms(au.duration || (s && s.dur))); } catch (e) { }

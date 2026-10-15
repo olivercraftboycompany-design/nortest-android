@@ -31,7 +31,7 @@ const tx = async (s, m, f) => {
   });
 };
 const all = s => tx(s, 'readonly', o => o.getAll());
-const put = (s, v) => tx(s, 'readwrite', o => o.put(v));
+const put = (s, v) => (s === 'songs' && v && v.device) ? devPut(v) : tx(s, 'readwrite', o => o.put(v));
 const del = (s, k) => tx(s, 'readwrite', o => o.delete(k));
 const meta = async k => (await tx('meta', 'readonly', o => o.get(k)))?.v;
 const save = (k, v) => put('meta', { k, v });
@@ -42,7 +42,65 @@ let S = { bass: 0, mid: 0, treb: 0, vol: 1, speed: 1, blur: 24, accent: '#1ed760
 let sleepT, sleepMin = 0;
 let view = 'library', sub = null, lastList = [], covers = {};
 const byId = id => songs.find(s => s.id === id);
-const cover = s => s && s.cover ? (covers[s.id] ||= URL.createObjectURL(s.cover)) : PH;
+const cover = s => s && s.cover ? (covers[s.id] ||= URL.createObjectURL(s.cover)) : s && s.art ? s.art : PH;
+
+/* ---------- Music on the phone (Android app only) ----------
+   The Nortest app lists every music file on the phone. Those songs are mixed into
+   `songs` with device:true and play straight from the phone (nothing is copied);
+   they never go into IndexedDB or backups. Favorites, edits and lyrics for them are
+   kept in meta 'devov'. On the website NN is null and none of this runs. */
+const NN = window.NortestNative && window.NortestNative.deviceSongs ? window.NortestNative : null;
+const DEVB = location.origin + '/devicemusic/';
+let dev = [], devOv = {}, devPerm = '', devScan = false;
+const own = () => songs.filter(s => !s.device);
+const devKey = s => (s.title + '|' + s.artist.split(/\s*[;\/,&]\s*/)[0]).toLowerCase().replace(/[^a-z0-9|]+/g, '');
+const devSong = r => {
+  const id = 'dev:' + r.id, o = { title: r.t || 'Unknown song', artist: r.ar || 'Unknown Artist', album: r.al || 'Unknown Album' };
+  return { id, device: true, mid: r.id, _o: o, ...o, lyrics: '', fav: false, added: (r.ad || 0) * 1000, dur: (r.d || 0) / 1000, src: DEVB + 'audio/' + r.id, art: DEVB + 'art/' + r.id, cover: null, ...(devOv[id] || {}) };
+};
+/* imported songs + phone songs (skipping hidden ones and copies of songs he already imported) */
+const mergeDev = a => {
+  const mine = a.filter(s => !s.device), seen = {};
+  mine.forEach(s => (seen[devKey(s)] ??= []).push(s.dur || 0));
+  return mine.concat(dev.filter(s => !s.hidden && !(seen[devKey(s)] || []).some(d => !d || !s.dur || Math.abs(d - s.dur) < 4)));
+};
+const devPut = s => {
+  const o = {};
+  ['fav', 'synced', 'lyrics', 'syncTried', 'hidden'].forEach(k => { if (s[k]) o[k] = s[k]; });
+  ['title', 'artist', 'album'].forEach(k => { if (s[k] !== s._o[k]) o[k] = s[k]; });
+  if (Object.keys(o).length) devOv[s.id] = o; else delete devOv[s.id];
+  return save('devov', devOv);
+};
+const devRead = () => { try { dev = JSON.parse(NN.deviceSongs() || '[]').map(devSong); } catch (e) { dev = []; } };
+function devRefresh() {
+  if (!NN) return;
+  devRead();
+  songs = mergeDev(songs);
+  if (cur && cur.device) cur = byId(cur.id) || cur;
+  let ch = false;
+  for (let i = queue.length; i--;) if (i !== qi && !byId(queue[i])) { queue.splice(i, 1); if (i < qi) qi--; ch = true; }
+  if (ch) refreshQ();
+  devScan = false;
+  render();
+}
+window.__nortestDev = ev => {
+  if (!NN) return;
+  if (ev === 'perm') { devPerm = NN.musicPermission(); if (devPerm !== 'granted') { dev = []; songs = mergeDev(songs); } render(); }
+  else if (ev === 'scan') { devScan = true; render(); }
+  else if (ev === 'scandone') { if (devScan) { devScan = false; render(); } }
+  else devRefresh();
+};
+const devBanner = () => {
+  if (!NN || devPerm === 'granted') return '';
+  const blocked = devPerm === 'blocked';
+  return `<div class="devban"><span>${blocked ? 'Music access is off, so songs on your phone can\'t show here. Turn on <b>Music and audio</b> in Settings &gt; Permissions.' : 'Show all the music on your phone here too. Nothing gets copied.'}</span><button class="btn pri" data-a="${blocked ? 'dset' : 'dallow'}">${blocked ? 'Open settings' : 'Allow music access'}</button></div>`;
+};
+const devTools = () => {
+  if (!NN || devPerm !== 'granted') return '';
+  const nh = dev.filter(s => s.hidden).length;
+  return `<select data-s="src" style="width:auto">${[['all', 'All songs'], ['imp', 'Imported'], ['dev', 'On this phone']].map(([v, t]) => `<option value="${v}" ${(S.src || 'all') === v ? 'selected' : ''}>${t}</option>`).join('')}</select><button class="btn" data-a="drescan">${devScan ? 'Scanning...' : 'Rescan'}</button>${nh ? `<button class="btn" data-a="dunhide">Show ${nh} hidden</button>` : ''}`;
+};
+const srcOk = s => !NN || !S.src || S.src === 'all' || (S.src === 'dev' ? !!s.device : !s.device);
 const match = (s, q) => (s.title + ' ' + s.artist + ' ' + s.album).toLowerCase().includes(q);
 const cp = () => pls.find(x => x.id === sub);
 const shuffle = a => { a = [...a]; for (let i = a.length; i > 1; i--) { const j = Math.floor(Math.random() * i);[a[i - 1], a[j]] = [a[j], a[i - 1]]; } return a; };
@@ -50,7 +108,7 @@ const shuffle = a => { a = [...a]; for (let i = a.length; i > 1; i--) { const j 
 /* ---------- Rendering ---------- */
 const row = id => {
   const s = byId(id);
-  return `<div class="row ${cur && cur.id === id ? 'now' : ''}" data-a="play" data-id="${id}"><img src="${cover(s)}" alt=""><div class="rm"><div><b>${esc(s.title)}</b><i>${esc(s.album)}</i></div><span>${esc(s.artist)}</span></div><em class="dur">${s.dur ? fmt(s.dur) : ''}</em><button class="ib hrt ${s.fav ? 'on' : ''}" data-a="fav" aria-label="Favorite">${ic('heart')}</button><button class="ib" data-a="dots" aria-label="More">${ic('dots')}</button></div>`;
+  return `<div class="row ${cur && cur.id === id ? 'now' : ''}${s.device ? ' dev' : ''}" data-a="play" data-id="${id}"><img src="${cover(s)}" alt="" loading="lazy"><div class="rm"><div><b>${esc(s.title)}</b>${s.device ? '<small class="ph" title="On this phone">phone</small>' : ''}<i>${esc(s.album)}</i></div><span>${esc(s.artist)}</span></div><em class="dur">${s.dur ? fmt(s.dur) : ''}</em><button class="ib hrt ${s.fav ? 'on' : ''}" data-a="fav" aria-label="Favorite">${ic('heart')}</button><button class="ib" data-a="dots" aria-label="More">${ic('dots')}</button></div>`;
 };
 const list = (ids, empty) => { lastList = ids; return ids.length ? ids.map(row).join('') : `<p class="empty">${empty || ''}</p>`; };
 const card = (n, sb, img, key) => `<div class="card" data-a="opg" data-k="${esc(key)}"><img src="${img}" alt=""><b>${esc(n)}</b><span>${sb}</span></div>`;
@@ -84,13 +142,14 @@ const qHTML = () => `<div class="qwrap"><div class="bar"><input class="qs" place
 const addRows = (p, q) => songs.filter(s => match(s, q)).map(s => `<div class="row" data-id="${s.id}"><img src="${cover(s)}" alt=""><div class="rm"><div><b>${esc(s.title)}</b></div><span>${esc(s.artist)}</span></div><button class="btn sm" data-a="ptog">${p.songs.includes(s.id) ? 'Added' : 'Add'}</button></div>`).join('');
 
 const sorters = { added: (a, b) => b.added - a.added, title: (a, b) => a.title.localeCompare(b.title), artist: (a, b) => a.artist.localeCompare(b.artist), album: (a, b) => a.album.localeCompare(b.album) };
-const libBar = n => `<div class="bar"><button class="btn pri" data-a="playall">Play all</button><button class="btn" data-a="shufall">Shuffle all</button><span style="flex:1;color:var(--mu)">${n} songs</span><select data-s="sort" style="width:auto">${[['added', 'Recently added'], ['title', 'Title'], ['artist', 'Artist'], ['album', 'Album'], ['plays', 'Most played']].map(([v, t]) => `<option value="${v}" ${S.sort === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div>`;
+const libBar = n => `<div class="bar"><button class="btn pri" data-a="playall">Play all</button><button class="btn" data-a="shufall">Shuffle all</button><span style="flex:1;color:var(--mu)">${n} songs</span>${devTools()}<select data-s="sort" style="width:auto">${[['added', 'Recently added'], ['title', 'Title'], ['artist', 'Artist'], ['album', 'Album'], ['plays', 'Most played']].map(([v, t]) => `<option value="${v}" ${S.sort === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div>`;
 function render() {
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
   $('#search').style.display = view === 'library' ? '' : 'none';
+  if (NN && devPerm === '') devPerm = NN.musicPermission();
   const q = $('#search').value.toLowerCase();
   let h;
-  if (view === 'library') { const ids = songs.filter(s => match(s, q)).sort(sorters[S.sort] || sorters.added).map(s => s.id); h = libBar(ids.length) + list(ids, 'No songs found. Use Upload songs or drop audio files here.'); }
+  if (view === 'library') { const ids = songs.filter(s => match(s, q) && srcOk(s)).sort(sorters[S.sort] || sorters.added).map(s => s.id); h = devBanner() + libBar(ids.length) + list(ids, devScan && !songs.length ? 'Looking for music on your phone...' : 'No songs found. Use Upload songs or drop audio files here.'); }
   else if (view === 'favorites') h = list(songs.filter(s => s.fav).map(s => s.id), 'No favorites yet. Tap the heart on a song.');
   else if (view === 'history') h = (hist.length ? '<div class="bar"><button class="btn" data-a="hclr">Clear history</button></div>' : '') + list(hist.filter(byId), 'Nothing played yet.');
   else if (view === 'queue') h = qHTML();
@@ -139,9 +198,9 @@ function load(i, play = true) {
   }
   qi = i; cur = s;
   const old = url;
-  url = URL.createObjectURL(s.blob);
+  url = s.blob ? URL.createObjectURL(s.blob) : (s.src || '');
   au.src = url;
-  if (old) URL.revokeObjectURL(old);     // revoke AFTER the new source is attached
+  if (old && old.startsWith('blob:')) URL.revokeObjectURL(old);     // revoke AFTER the new source is attached
   if (play) { hist = [s.id, ...hist.filter(x => x !== s.id)].slice(0, 100); save('hist', hist); start(); }
   ui();
 }
@@ -311,7 +370,7 @@ document.addEventListener('input', e => {
     const k = t.dataset.s;
     S[k] = t.type === 'checkbox' ? t.checked : ['bass', 'mid', 'treb', 'vol', 'speed', 'blur'].includes(k) ? +t.value : t.value;
     save('S', S); applyUI();
-    if (k === 'sink') applySink(); else if (k === 'showOut') outLabel(); else if (k === 'sort') render();
+    if (k === 'sink') applySink(); else if (k === 'showOut') outLabel(); else if (k === 'sort' || k === 'src') render();
   } else if (t.id === 'sleep') {
     clearTimeout(sleepT); sleepMin = +t.value;
     if (sleepMin) sleepT = setTimeout(() => au.pause(), sleepMin * 60000);
@@ -360,7 +419,7 @@ Object.assign(A, {
     const it = [['Play next', 'qnext'], ['Add to queue', 'qadd'],
     ...(queue.includes(id) ? [['Remove from queue', 'qrmid']] : []),
     [s.fav ? 'Remove from favorites' : 'Add to favorites', 'fav'], ['Edit details', 'edit'], ['Add to playlist', 'topl'],
-    ...(view === 'playlists' && sub ? [['Remove from this playlist', 'prm']] : []), ['Delete song', 'sdel']];
+    ...(view === 'playlists' && sub ? [['Remove from this playlist', 'prm']] : []), s.device ? ['Hide from library', 'dhide'] : ['Delete song', 'sdel']];
     m.innerHTML = it.map(([t, a]) => `<button data-a="${a}" data-id="${id}">${t}</button>`).join('');
     m.classList.remove('hid');
     m.style.top = Math.max(8, Math.min(r.bottom, innerHeight - m.offsetHeight - 8)) + 'px';
@@ -461,13 +520,49 @@ document.addEventListener('keydown', e => {
   if (k) { e.preventDefault(); k(); }
 });
 
+/* ---------- Music on the phone: actions + style ---------- */
+Object.assign(A, {
+  dallow: () => NN && NN.requestMusicAccess(),
+  dset: () => NN && NN.openMusicSettings(),
+  drescan: () => { if (!NN) return; devScan = true; render(); NN.rescanDeviceMusic(); },
+  dhide: async (b, id) => {
+    const s = byId(id); if (!s || !s.device) return;
+    s.hidden = true; await devPut(s);
+    const d = dev.find(x => x.id === id); if (d) d.hidden = true;
+    songs = mergeDev(songs);
+    for (let i = queue.length; i--;) if (queue[i] === id && i !== qi) { queue.splice(i, 1); if (i < qi) qi--; }
+    refreshQ(); render();
+  },
+  dunhide: async () => {
+    dev.forEach(s => { if (s.hidden) { s.hidden = false; devPut(s); } });
+    songs = mergeDev(songs); render();
+  }
+});
+if (NN) {
+  const st = document.createElement('style');
+  st.textContent = '.devban{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;margin:0 0 12px;border-radius:14px;background:rgba(255,255,255,.07)}.devban span{flex:1 1 200px}.row .ph{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;font-size:10px;line-height:16px;vertical-align:middle;background:rgba(255,255,255,.12);color:var(--mu);font-weight:400;font-style:normal}';
+  document.head.appendChild(st);
+  /* a phone song that won't stream (very old WebView): load it into memory instead */
+  au.addEventListener('error', () => {
+    const s = cur;
+    if (!s || !s.device || s._retry || !au.src.startsWith(DEVB)) return;
+    s._retry = true;
+    fetch(s.src).then(r => r.ok ? r.blob() : Promise.reject(r.status)).then(b => {
+      if (cur !== s) return;
+      const t = au.currentTime;
+      url = URL.createObjectURL(b); au.src = url; au.currentTime = t; start();
+    }).catch(() => { try { NN.toast('Could not play ' + s.title); } catch (e) { } });
+  });
+}
+
 /* ---------- Init ---------- */
 (async () => {
   $('#nav').innerHTML = ['library', 'favorites', 'albums', 'artists', 'queue', 'playlists', 'history'].map(v => `<button data-a="nav" data-v="${v}">${v}</button>`).join('');
   $('#mp').innerHTML = $('#bp').innerHTML = ic('prev');
   $('#mn').innerHTML = $('#bn').innerHTML = ic('next');
   $('#bH').innerHTML = ic('heart');
-  songs = await all('songs'); pls = await all('playlists');
+  if (NN) { devOv = (await meta('devov')) || {}; devPerm = NN.musicPermission(); devRead(); }
+  songs = mergeDev(await all('songs')); pls = await all('playlists');
   S = { ...S, ...(await meta('S')) };
   hist = (await meta('hist')) || [];
   queue = ((await meta('queue')) || []).filter(byId);

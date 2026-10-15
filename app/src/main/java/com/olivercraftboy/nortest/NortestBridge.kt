@@ -63,6 +63,29 @@ class NortestBridge(private val activity: MainActivity) {
     @JavascriptInterface
     fun setFullscreen(on: Boolean) = activity.runOnUiThread { activity.setImmersiveBars(on) }
 
+    // ---- Music on the phone ----
+
+    /** "granted", "ask", "denied" or "blocked". */
+    @JavascriptInterface
+    fun musicPermission(): String = try { activity.musicPermissionState() } catch (_: Exception) { "ask" }
+
+    /** Ask for music access (opens Settings if Android won't show the prompt again). */
+    @JavascriptInterface
+    fun requestMusicAccess() { activity.requestMusicAccess() }
+
+    @JavascriptInterface
+    fun openMusicSettings() { activity.openAppSettings() }
+
+    /** Every music file on the phone as JSON: [{id,t,ar,al,aid,d,ad,m,sz}]. */
+    @JavascriptInterface
+    fun deviceSongs(): String = try { DeviceMusic.songsJson(activity) } catch (_: Exception) { "[]" }
+
+    @JavascriptInterface
+    fun rescanDeviceMusic() { activity.rescanDeviceMusic() }
+
+    @JavascriptInterface
+    fun isScanningDeviceMusic(): Boolean = DeviceMusic.scanning
+
     @JavascriptInterface
     fun toast(msg: String?) = activity.runOnUiThread {
         Toast.makeText(activity, msg.orEmpty(), Toast.LENGTH_LONG).show()

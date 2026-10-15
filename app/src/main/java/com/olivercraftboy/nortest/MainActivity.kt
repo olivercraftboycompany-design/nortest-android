@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Message
+import android.provider.Settings
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
 import android.webkit.MimeTypeMap
@@ -23,6 +24,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import android.app.AlertDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +40,8 @@ class MainActivity : ComponentActivity() {
         const val HOST = "appassets.androidplatform.net"
         const val START_URL = "https://$HOST/assets/www/index.html"
         const val UPDATE_URL = "https://oliver-apps.sites.tab.bot/versions.json"
+        const val PREF_MUSIC_ASKED = "music_asked"
+        const val PREF_MUSIC_INTRO = "music_intro_shown"
     }
 
     private lateinit var root: FrameLayout
@@ -69,7 +73,13 @@ class MainActivity : ComponentActivity() {
         cb.onReceiveValue(uris.toTypedArray())
     }
 
-    private val askNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    private val askNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { maybeAskMusicFirstTime() }
+    private val askMusic = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        prefs.edit().putBoolean(PREF_MUSIC_ASKED, true).apply()
+        onMusicPermissionMaybeChanged()
+    }
+    private val prefs by lazy { getSharedPreferences("nortest", MODE_PRIVATE) }
+    private var lastMusicGranted: Boolean? = null
     private val askStorage = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,8 +135,13 @@ class MainActivity : ComponentActivity() {
         }
         wv.addJavascriptInterface(NortestBridge(this), "NortestNative")
         wv.webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
-                assetLoader.shouldInterceptRequest(request.url)
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                val url = request.url
+                if (url.host == HOST) {
+                    DeviceMusic.intercept(this@MainActivity, url.path, request.requestHeaders)?.let { return it }
+                }
+                return assetLoader.shouldInterceptRequest(url)
+            }
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url
@@ -196,7 +211,76 @@ class MainActivity : ComponentActivity() {
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
             askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            maybeAskMusicFirstTime()
         }
+    }
+
+    // ---- Music on the phone (MediaStore) ----
+
+    /** "granted", "ask" (never asked), "denied" (can ask again) or "blocked" (only Settings can fix it). */
+    fun musicPermissionState(): String = DeviceMusicParse.permissionState(
+        DeviceMusic.hasPermission(this),
+        prefs.getBoolean(PREF_MUSIC_ASKED, false),
+        shouldShowRequestPermissionRationale(DeviceMusic.permission)
+    )
+
+    /** First open after the update: one short explanation, then Android's own prompt. */
+    private fun maybeAskMusicFirstTime() {
+        if (DeviceMusic.hasPermission(this) || prefs.getBoolean(PREF_MUSIC_INTRO, false) || isFinishing) return
+        prefs.edit().putBoolean(PREF_MUSIC_INTRO, true).apply()
+        try {
+            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle("Add your phone's music?")
+                .setMessage("Nortest can put all the songs on your phone into your library. Nothing is copied or uploaded.")
+                .setPositiveButton("Continue") { _, _ -> requestMusicAccess() }
+                .setNegativeButton("Not now", null)
+                .show()
+        } catch (_: Exception) { }
+    }
+
+    fun requestMusicAccess() = runOnUiThread {
+        when (musicPermissionState()) {
+            "granted" -> onMusicPermissionMaybeChanged()
+            "blocked" -> openAppSettings()
+            else -> try { askMusic.launch(DeviceMusic.permission) } catch (_: Exception) { openAppSettings() }
+        }
+    }
+
+    fun openAppSettings() = runOnUiThread {
+        try {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+        } catch (_: Exception) { }
+    }
+
+    fun rescanDeviceMusic() {
+        sendDevEvent("scan")
+        DeviceMusic.scanAsync(this, 0L) { sendDevEvent("songs") }
+        // Always tell the page when the scan ends, even if nothing changed.
+        webView?.postDelayed({ waitScanThenNotify(0) }, 300)
+    }
+
+    private fun waitScanThenNotify(tries: Int) {
+        if (DeviceMusic.scanning && tries < 50) { webView?.postDelayed({ waitScanThenNotify(tries + 1) }, 200); return }
+        sendDevEvent("scandone")
+    }
+
+    private fun onMusicPermissionMaybeChanged() {
+        val granted = DeviceMusic.hasPermission(this)
+        val before = lastMusicGranted
+        lastMusicGranted = granted
+        if (granted) {
+            DeviceMusic.watch(this) { sendDevEvent("songs") }
+            DeviceMusic.scanAsync(this, if (before == true) 3000L else 0L) { sendDevEvent("songs") }
+        } else {
+            DeviceMusic.unwatch(this)
+            if (DeviceMusic.count() > 0) DeviceMusic.scanAsync(this, 0L) { sendDevEvent("songs") }
+        }
+        if (before != granted) sendDevEvent("perm")
+    }
+
+    private fun sendDevEvent(ev: String) = runOnUiThread {
+        webView?.evaluateJavascript("try{window.__nortestDev&&window.__nortestDev('" + ev + "')}catch(e){}", null)
     }
 
     fun canWritePublicDownloads(): Boolean {
@@ -224,6 +308,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Rescan the phone's music on every open (new downloads show up, deleted songs go).
+        try { onMusicPermissionMaybeChanged() } catch (_: Throwable) { }
         try {
             val u = updater ?: return
             if (manualUpdateCheck) { manualUpdateCheck = false; u.checkNow() } else u.onResume()
@@ -240,6 +326,7 @@ class MainActivity : ComponentActivity() {
     // so the player keeps running (and playing) with the screen off.
 
     override fun onDestroy() {
+        DeviceMusic.unwatch(this)
         webView?.let {
             PlayerHub.detach(it)
             it.evaluateJavascript("try{au.pause()}catch(e){}", null)
