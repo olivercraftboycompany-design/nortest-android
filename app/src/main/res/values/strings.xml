@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Nortest</string>
+    <string name="channel_name">Now playing</string>
+    <string name="channel_desc">Music controls for Nortest</string>
+    <string name="action_prev">Previous</string>
+    <string name="action_rew">Back 10 seconds</string>
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_ff">Forward 10 seconds</string>
+    <string name="action_next">Next</string>
+    <string name="nothing_playing">Nothing playing</string>
+</resources>
