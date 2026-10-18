@@ -113,7 +113,7 @@ const LG = (() => {
     H.classList.toggle('lg-still', !!S_.rmotion || mq.matches);
     /* the iOS look: rounded square art unless he picked a shape */
     H.dataset.art = 'rounded';   /* 1.5.1: the M3 cookie/circle masks are gone; glass art is always a rounded square */
-    soon();
+    soon(); try { lens.sync(); } catch (e) { }
   };
 
   /* ---------- library color field: the playing (or last) cover, huge and slowly drifting ---------- */
@@ -148,6 +148,7 @@ const LG = (() => {
       const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return;
       const r = e.getBoundingClientRect(); if (!r.height || (land && s === '#nav')) return; top = Math.min(top, r.top); });
     H.style.setProperty('--lg-dock', Math.max(0, Math.round(innerHeight - top + 6)) + 'px');
+    const tb = document.querySelector('.main > .top'); if (tb) H.style.setProperty('--lg-toph', Math.round(tb.getBoundingClientRect().height) + 'px');
   };
   addEventListener('resize', () => setTimeout(dock, 60));
   new MutationObserver(() => setTimeout(dock, 30)).observe(document.body, { attributes: true, attributeFilter: ['class'] });
@@ -244,7 +245,96 @@ const LG = (() => {
     mq.addEventListener && mq.addEventListener('change', apply);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
-  return { apply, refresh, soon, svgOK: () => svgOK, live: () => [...live.keys()].map(e => e.id || e.className), mode: () => mode };
+  /* ---------- 1.6.2 lens: real rim refraction on the tab bar + mini player where backdrop-filter url() can't draw
+     (Android Chrome and the app's WebView). A live copy of what sits behind each pill (the wallpaper + the scrolling list)
+     is clipped to the pill and run through an SVG displacement filter as a plain CSS filter:url(), which Chromium on Android
+     does draw. Same per-pixel rim bend as 1.5, no color fringe. Display only: nothing is stored. ---------- */
+  const lens = (() => {
+    const PILLS = ['#nav', '#mini'];
+    const can = !svgOK && !!(window.CSS && CSS.supports('filter', 'url(#a)'));
+    const L = new Map();
+    let raf = 0, cloneT = 0, lastClone = 0, dirty = true, on = false;
+    const clean = n => { n.removeAttribute('id'); n.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); n.querySelectorAll('video,audio,iframe,script').forEach(e => e.remove()); return n; };
+    const buildLens = (id, w, h, r) => {
+      const band = Math.min(Math.max(18, Math.min(w, h) * 0.5), 46);
+      const f = el('filter', { id, x: 0, y: 0, width: w, height: h, filterUnits: 'userSpaceOnUse', primitiveUnits: 'userSpaceOnUse', 'color-interpolation-filters': 'sRGB' });
+      f.appendChild(el('feImage', { href: makeMap(w, h, r, band), x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'map' }));
+      f.appendChild(el('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: 3.6, edgeMode: 'duplicate', result: 'frost' }));
+      f.appendChild(el('feDisplacementMap', { in: 'frost', in2: 'map', scale: Math.round(band * 2.6), xChannelSelector: 'R', yChannelSelector: 'G', result: 'bent' }));
+      f.appendChild(el('feColorMatrix', { in: 'bent', type: 'saturate', values: 1.7 }));
+      return f;
+    };
+    const off = () => { on = false; H.classList.remove('lg-lensing'); L.forEach((o, s) => { o.box.remove(); o.f && o.f.remove(); const p = document.querySelector(s); p && p.classList.remove('lg-lensed'); }); L.clear(); dirty = true; };
+    /* fresh copies of the wallpaper and the list, at most every 350 ms while things change */
+    const reclone = () => {
+      cloneT = 0; lastClone = performance.now(); dirty = false;
+      const v = document.getElementById('view'), bg = document.querySelector('body > .bg');
+      L.forEach(o => {
+        o.bgw.replaceChildren(); o.vw.replaceChildren();
+        if (bg) { const c = clean(bg.cloneNode(true)); c.style.position = 'absolute'; c.style.inset = '0'; o.bgw.appendChild(c); }
+        if (v) { const c = document.createElement('div'); c.className = 'lg-lens-view'; for (const ch of v.children) c.appendChild(clean(ch.cloneNode(true))); o.vw.appendChild(c); o.vc = c; }
+      });
+      queue();
+    };
+    const markDirty = () => { dirty = true; if (!cloneT) cloneT = setTimeout(reclone, Math.max(60, 350 - (performance.now() - lastClone))); };
+    const sync = () => {
+      raf = 0;
+      const big = document.getElementById('big');
+      const want = can && mode === 'full' && H.classList.contains('lg-android');
+      if (!want) { if (on) off(); return; }
+      if (!on) { on = true; H.classList.add('lg-lensing'); }
+      const v = document.getElementById('view'), cover = document.body.classList.contains('set-open') || (big && big.classList.contains('show'));
+      let fresh = false;
+      PILLS.forEach(sel => {
+        const p = document.querySelector(sel); let o = L.get(sel);
+        const cs = p && getComputedStyle(p);
+        const vis = p && !cover && cs.display !== 'none' && cs.visibility !== 'hidden' && p.offsetWidth > 8 && p.offsetHeight > 8;
+        if (!vis) { if (o) o.box.style.display = 'none'; p && p.classList.remove('lg-lensed'); return; }
+        if (!o) {
+          const box = document.createElement('div'); box.className = 'lg-lens'; box.setAttribute('aria-hidden', 'true'); box.inert = true;
+          const inner = document.createElement('div'); inner.className = 'lg-lens-in';
+          const bgw = document.createElement('div'); bgw.className = 'lg-lens-bg';
+          const vw = document.createElement('div'); vw.className = 'lg-lens-vw';
+          inner.append(bgw, vw); box.appendChild(inner);
+          o = { box, inner, bgw, vw, key: '', f: null, vc: null }; L.set(sel, o); fresh = true;
+        }
+        /* the copies live at the very end of body so the real list always comes first in document order */
+        if (o.box.parentNode !== document.body) document.body.appendChild(o.box);
+        const w = p.offsetWidth, h = p.offsetHeight, rad = Math.round(radiusOf(p, w, h)), key = w + '|' + h + '|' + rad;
+        if (o.key !== key) { ensureSvg(); o.f && o.f.remove(); const id = 'lgl-' + (++seq); o.f = buildLens(id, w, h, rad); defs.appendChild(o.f); o.inner.style.filter = `url(#${id}) brightness(1.04)`; o.key = key; }
+        const r = p.getBoundingClientRect(), x = Math.round(r.left + (r.width - w) / 2), y = Math.round(r.top + (r.height - h) / 2);
+        const b = o.box.style;
+        b.display = 'block'; b.left = x + 'px'; b.top = y + 'px'; b.width = w + 'px'; b.height = h + 'px'; b.borderRadius = rad + 'px'; b.zIndex = String((parseInt(cs.zIndex, 10) || 1) - 1);
+        o.bgw.style.cssText = `left:${-x}px;top:${-y}px;width:${innerWidth}px;height:${innerHeight}px`;
+        if (v) {
+          const vr = v.getBoundingClientRect();
+          o.vw.style.cssText = `left:${Math.round(vr.left) - x}px;top:${Math.round(vr.top) - y}px;width:${v.clientWidth}px;height:${v.clientHeight}px`;
+          if (o.vc) { const vs = getComputedStyle(v); o.vc.style.cssText = `padding:${vs.paddingTop} ${vs.paddingRight} ${vs.paddingBottom} ${vs.paddingLeft};transform:translate3d(0,${-v.scrollTop}px,0)`; }
+        }
+        p.classList.add('lg-lensed');
+      });
+      if (fresh || (dirty && !cloneT)) markDirty();
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(sync); };
+    if (can) {
+      /* scrolling only moves the list copy: no layout reads, one transform per pill */
+      let sraf = 0;
+      const onS = () => { sraf = 0; const v = document.getElementById('view'); if (!on || !v) return; const t = `translate3d(0,${-v.scrollTop}px,0)`; L.forEach(o => { if (o.vc) o.vc.style.transform = t; }); };
+      document.addEventListener('scroll', e => { if (e.target && e.target.id === 'view') { if (!sraf) sraf = requestAnimationFrame(onS); } else queue(); }, { capture: true, passive: true });
+      addEventListener('resize', () => { queue(); markDirty(); });
+      const start2 = () => {
+        const v = document.getElementById('view'), bg = document.querySelector('body > .bg');
+        if (v) new MutationObserver(markDirty).observe(v, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'src', 'style'] });
+        if (bg) new MutationObserver(markDirty).observe(bg, { childList: true, subtree: true, attributes: true });
+        new MutationObserver(queue).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        ['#big', '#mini', '#nav'].forEach(s => { const e = document.querySelector(s); e && new MutationObserver(queue).observe(e, { attributes: true, attributeFilter: ['class', 'style'] }); });
+        setInterval(queue, 700); queue();
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start2); else setTimeout(start2, 0);
+    }
+    return { sync: queue, reclone, on: () => on, can: () => can };
+  })();
+  return { apply, refresh, soon, svgOK: () => svgOK, live: () => [...live.keys()].map(e => e.id || e.className), mode: () => mode, lens };
 })();
 
 /* range fill for the glass sliders */

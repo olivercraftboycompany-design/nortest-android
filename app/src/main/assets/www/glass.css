@@ -497,3 +497,36 @@ html.lgx.lg15:not([data-glass=off]) :is(#menu,#mb,#qp):not(#z_):not(#z2_):not(#z
   linear-gradient(rgba(22,22,28,.80),rgba(22,22,28,.80)),var(--lg-cover-soft,none) center/cover no-repeat,#16161c}
 html.lgx.lg15.light:not([data-glass=off]) :is(#menu,#mb,#qp):not(#z_):not(#z2_):not(#z3_){background:
   linear-gradient(160deg,rgba(255,255,255,.5),rgba(255,255,255,.2)),linear-gradient(rgba(246,246,249,.80),rgba(246,246,249,.80)),var(--lg-cover-soft,none) center/cover no-repeat,#f6f6f9}
+/* ================= 1.6.2 clean bottom: no blurred band around the mini player and tab bar.
+   On Android the list now runs to the bottom of the screen and scrolls under the floating pills
+   (no wallpaper strip, no fade, no mask). The pills keep their 1.5 glass + solid tint. ================= */
+html.lgx.lg-android .main:not(#z_){height:100%}
+html.lgx.lg-android #view:not(#z_),html.lgx.lg-android body.cbg-on #view:not(#z_){-webkit-mask:none;mask:none;padding-bottom:calc(var(--nav-h) + var(--mini-h) + 52px + env(safe-area-inset-bottom))}
+html.lgx.lg-android body.nomini #view:not(#z_){padding-bottom:calc(var(--nav-h) + 44px + env(safe-area-inset-bottom))}
+.b1fade:not(#z_){display:none!important}
+@media (orientation:landscape) and (max-height:500px){
+  html.lgx.lg-android #view:not(#z_),html.lgx.lg-android body.cbg-on #view:not(#z_){padding-bottom:calc(var(--mini-h) + 36px + env(safe-area-inset-bottom))}
+  html.lgx.lg-android body.nomini #view:not(#z_){padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+}
+/* no backdrop at all (fallback path): the list now passes under the pills, so their solid tint goes near-opaque */
+html.lgx.lg15.no-svg-bf:not([data-glass=off]) :is(#nav,#mini):not(#z_):not(#z2_){background:rgba(26,26,32,.94)}
+html.lgx.lg15.no-svg-bf.light:not([data-glass=off]) :is(#nav,#mini):not(#z_):not(#z2_){background:rgba(250,250,252,.95)}
+/* with the list passing under them, the Android pills get a touch more tint so nothing ghosts through the blur */
+html.lgx.lg15.lg-android:not([data-glass=off]):not(.no-svg-bf) :is(#nav,#mini):not(#z_){background:rgba(30,30,36,.52)}
+html.lgx.lg15.lg-android.light:not([data-glass=off]):not(.no-svg-bf) :is(#nav,#mini):not(#z_){background:rgba(255,255,255,.64)}
+/* 1.6.2 clean top: same for the header (search bar + its buttons). It floats over the list, which scrolls
+   plainly under it (no strip of wallpaper behind it, no hard cut under it). glass.js measures it into --lg-toph. */
+html.lgx.lg-android .main:not(#z_){position:relative}
+html.lgx.lg-android .main>.top:not(#z_){position:absolute;left:0;right:0;top:0;z-index:3;background:none}
+html.lgx.lg-android #view:not(#z_):not(#z2_){padding-top:var(--lg-toph,56px)}
+html.lgx.lg15.no-svg-bf.lg-android:not([data-glass=off]) .main>.top :is(.sbar,.tacts .ib):not(#z_):not(#z2_){background:rgba(64,64,74,.96)}
+html.lgx.lg15.no-svg-bf.lg-android.light:not([data-glass=off]) .main>.top :is(.sbar,.tacts .ib):not(#z_):not(#z2_){background:rgba(244,244,247,.96)}
+/* 1.6.2 lens (glass.js): a live, refracted copy of what is behind the tab bar and mini player sits right under each pill */
+.lg-lens{position:fixed;display:none;overflow:hidden;pointer-events:none;contain:strict;isolation:isolate;transform:translateZ(0)}
+.lg-lens-in{position:absolute;inset:0;overflow:hidden}
+.lg-lens-bg,.lg-lens-vw{position:absolute;overflow:hidden}
+.lg-lens-view{position:absolute;left:0;top:0;right:0;will-change:transform}
+html.lg-scrolling .lg-lens-in{filter:blur(5px) saturate(1.7)!important}
+html.lgx.lg-lensing :is(#nav,#mini).lg-lensed:not(#z_):not(#z2_){-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(30,30,36,.50)}
+html.lgx.lg-lensing.light :is(#nav,#mini).lg-lensed:not(#z_):not(#z2_){background:rgba(255,255,255,.58)}
+html.lgx[data-glass=off] .lg-lens{display:none!important}
