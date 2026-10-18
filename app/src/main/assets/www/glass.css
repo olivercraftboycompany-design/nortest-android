@@ -28,7 +28,7 @@ html.lgx.dark .bg::after{background:linear-gradient(to bottom,rgba(0,0,0,.05),rg
 @keyframes lgDrift{0%{transform:scale(1.05) rotate(0) translate(0,0)}50%{transform:scale(1.22) rotate(8deg) translate(4%,-3%)}100%{transform:scale(1.12) rotate(-6deg) translate(-4%,2%)}}
 html.lgx.lg-still .bg::before{animation:none}
 /* a custom background from settings still wins */
-html.lgx .bg:is([style*="background-image"],:has(video,img))::before,html.lgx .bg:is([style*="background-image"],:has(video,img))::after{display:none}
+html.lgx .bg:is([style*="background-image"],:has(.cbg[style*="url("]),:has(video:not(.hid)),:has(img))::before,html.lgx .bg:is([style*="background-image"],:has(.cbg[style*="url("]),:has(video:not(.hid)),:has(img))::after{display:none}
 
 /* ---------- glass material ---------- */
 html.lgx :is(#nav,#mini,.npp,#menu,#mb,.chip,.lbar .btn,.fab,.sbar,.tacts .ib,.bt .ib,#setp .card-list,#setp .sh .ib,.seg,#qp,.devban,.toast){
@@ -259,3 +259,118 @@ html.lgx .bbg{filter:blur(48px) saturate(1.45) brightness(.72)}
 html.lgx .tacts{gap:8px}
 html.lgx .tacts .ib{width:40px;height:40px;border-radius:20px}
 html.lgx .top{gap:8px}
+
+/* ================= nortest 1.5.1 - fixes and polish ================= */
+/* 1. Settings: one opaque, scroll-safe background on the panel itself (no fixed pseudo layers inside a scroller,
+      no transform left behind by the slide-in), so nothing behind can ever show through, top to bottom. */
+html.lgx #setp{animation-fill-mode:backwards;
+  background:linear-gradient(180deg,rgba(0,0,0,.30),rgba(0,0,0,.52)),var(--lg-cover-soft,none) center/cover no-repeat,#141418}
+html.lgx.light #setp{background:linear-gradient(180deg,rgba(255,255,255,.52),rgba(255,255,255,.70)),var(--lg-cover-soft,none) center/cover no-repeat,#f2f2f7}
+html.lgx #setp::before,html.lgx #setp::after{content:none;display:none}
+html.lgx body.set-open :is(#mini,#nav,.fab,#mProg){visibility:hidden!important;pointer-events:none}
+html.lgx #setp{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+
+/* 2. Solid tint floors: every glass panel stays readable even if the backdrop effect doesn't render on a device */
+html.lgx{--lg-tint:rgba(34,34,40,.38);--lg-tint-strong:rgba(26,26,32,.80);--lg-panel:rgba(30,30,36,.86)}
+html.lgx.light{--lg-tint:rgba(255,255,255,.48);--lg-tint-strong:rgba(250,250,252,.84);--lg-panel:rgba(248,248,250,.90)}
+html.lgx :is(#menu,#mb,#qp):not(#z_){background:var(--lg-panel)}
+
+html.lgx.no-svg-bf :is(#nav,#mini):not(#z_){background:var(--lg-tint-strong)}
+html.lgx #mod{background:rgba(0,0,0,.42)}
+
+/* 3. Thick 3D glass: settings cards, dialogs, sheets and the backup cards share one slab look,
+      bright rim top-left, inner depth at the bottom, soft drop shadow */
+html.lgx{--lg-slab:radial-gradient(120% 70% at 0% 0%,rgba(255,255,255,.14),transparent 55%),linear-gradient(165deg,rgba(255,255,255,.10),rgba(255,255,255,.035) 45%,rgba(255,255,255,.07));
+  --lg-slab-sh:inset 0 1.5px 0 rgba(255,255,255,.30),inset 1.5px 0 0 rgba(255,255,255,.10),inset 0 -2px 3px rgba(0,0,0,.28),inset 0 0 0 .5px rgba(255,255,255,.14),inset 0 0 26px rgba(255,255,255,.05),0 16px 34px rgba(0,0,0,.30),0 2px 6px rgba(0,0,0,.20)}
+html.lgx.light{--lg-slab:radial-gradient(120% 70% at 0% 0%,rgba(255,255,255,.75),transparent 55%),linear-gradient(165deg,rgba(255,255,255,.62),rgba(255,255,255,.40) 45%,rgba(255,255,255,.55));
+  --lg-slab-sh:inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(20,20,40,.07),inset 0 0 0 .5px rgba(0,0,0,.06),0 14px 30px rgba(20,20,40,.12),0 2px 6px rgba(20,20,40,.07)}
+html.lgx #setp .card-list,html.lgx .bk-card{background:var(--lg-slab),var(--lg-tint);box-shadow:var(--lg-slab-sh);border:0;border-radius:24px}
+html.lgx #setp .sg{margin:0 16px 22px}
+html.lgx #setp .sg>h2{margin:0 6px 8px;font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--lg-fg2)}
+html.lgx :is(#mb,#menu,#qp):not(#z_){box-shadow:var(--lg-slab-sh)}
+html.lgx #mb{border-radius:30px;padding:22px 20px 18px}
+html.lgx[data-glass=off] :is(#setp .card-list,.bk-card):not(#z_){background:var(--lg-tint-strong)}
+/* rows: one height, one padding, one separator, all the way down */
+html.lgx #setp .li{min-height:56px;padding:12px 16px;gap:12px;align-items:center}
+html.lgx #setp .li.col{align-items:stretch;gap:10px}
+html.lgx #setp .li .lt{min-width:0}
+html.lgx #setp .lt b{font-size:16px;line-height:21px;font-weight:600}
+html.lgx #setp .lt span{font-size:13px;line-height:18px}
+html.lgx #setp .li.col .seg{align-self:stretch}
+html.lgx #setp .li .btn{height:34px;min-width:72px;padding:0 16px;border-radius:17px;font-size:14px;font-weight:600;flex:none}
+html.lgx #setp select{height:34px;border-radius:17px;border:0;padding:0 30px 0 14px;background-color:rgba(120,120,128,.22);color:var(--lg-fg);font:600 14px var(--font)}
+html.lgx #setp .top5{margin:0;padding:0;list-style:none;counter-reset:t}
+html.lgx #setp .top5 li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:.5px solid var(--lg-hair)}
+html.lgx #setp .top5 li:first-child{border-top:0}
+html.lgx #setp .top5 em{font-style:normal;color:var(--lg-fg2);flex:none}
+html.lgx #setp .top5 span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 4. Buttons: one glass pill system everywhere (no M3 tonal / filled / outlined colors left) */
+html.lgx .btn{height:40px;padding:0 18px;border-radius:20px;border:0;font:600 15px var(--font);letter-spacing:0;background:rgba(120,120,128,.24);color:var(--lg-fg);box-shadow:inset 0 .5px 0 rgba(255,255,255,.18)}
+html.lgx .btn.pri{background:var(--lg-acc);color:var(--md-on-primary);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 12px color-mix(in srgb,var(--lg-acc) 35%,transparent)}
+html.lgx .btn:is(.tonal,.out){background:rgba(120,120,128,.24);color:var(--lg-fg);border:0}
+html.lgx .btn.text{background:transparent;box-shadow:none;color:var(--lg-acc)}
+html.lgx .btn.danger,html.lgx .btn.text.danger{color:#ff453a}
+html.lgx .btn.wide{width:100%;justify-content:center}
+html.lgx .btn:active{transform:scale(.97)}
+html.lgx .mrow{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+html.lgx .mrow .btn{flex:1}
+html.lgx .mlist{display:flex;flex-direction:column;gap:8px}
+html.lgx .mb h3{font-size:22px;line-height:28px;font-weight:700;letter-spacing:-.01em;margin:0 0 14px;color:var(--lg-fg)}
+html.lgx .mb label{color:var(--lg-fg2);font-size:13px}
+html.lgx :is(.mb,#setp) :is(input:not([type]),input[type=text],input[type=search],textarea){height:44px;border-radius:14px;border:0;padding:0 14px;background:rgba(120,120,128,.20);color:var(--lg-fg);font:400 16px var(--font);outline:0;box-shadow:inset 0 .5px 0 rgba(255,255,255,.08)}
+html.lgx .mb textarea{height:120px;padding:12px 14px}
+html.lgx :is(.mb,#setp) :is(input,textarea):focus{box-shadow:inset 0 0 0 1.5px var(--lg-acc)}
+/* ripples and M3 state layers off everywhere; a soft glass press instead */
+html.lgx .rp{display:none!important}
+html.lgx :is(.row,.li,#menu button,.card,.cs-item):active{background:rgba(255,255,255,.07)}
+html.lgx.light :is(.row,.li,#menu button,.card,.cs-item):active{background:rgba(0,0,0,.05)}
+/* checkboxes and radios (backup options) as iOS-style round checks */
+html.lgx :is(.mb,#setp,.bk-card) :is(input[type=checkbox]:not(.swt input),input[type=radio]){-webkit-appearance:none;appearance:none;width:22px;height:22px;flex:none;margin:0;border-radius:50%;border:1.5px solid var(--lg-fg3);background:transparent;display:grid;place-items:center;transition:background-color .2s,border-color .2s}
+html.lgx :is(.mb,#setp,.bk-card) :is(input[type=checkbox]:not(.swt input),input[type=radio]):checked{border-color:var(--lg-acc);background:var(--lg-acc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+html.lgx .bk-opt{border:0!important;border-radius:16px!important;background:rgba(120,120,128,.14);padding:12px 14px!important;display:flex;gap:12px;align-items:center}
+html.lgx .bk-card h4{font-size:17px;font-weight:700;margin:0 0 6px;color:var(--lg-fg)}
+html.lgx .bk-card p{color:var(--lg-fg2)}
+html.lgx .bk-bar{background:rgba(120,120,128,.24)!important;border-radius:4px}
+html.lgx .bk-warn{padding:10px 12px;border-radius:14px;background:rgba(255,159,10,.14);color:var(--lg-fg)}
+html.lgx .bk-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+
+/* 5. Shapes: no M3 cookie/blob masks anywhere in glass; one corner scale (art 12/20, cards 24, sheets 30) */
+html.lgx :is(#bArt,.phead img,.card img,.card[data-k] img){clip-path:none!important}
+html.lgx #bArt{border-radius:22px}
+html.lgx .phead img{border-radius:22px}
+html.lgx .card img{border-radius:16px}
+html.lgx .gb.play::before{clip-path:none!important;animation:none!important;border-radius:50%}
+html.lgx #big .pr .wv{display:none}
+/* playlists "New playlist" tile: glass, not an M3 tonal block */
+html.lgx .card:is(.new,.add,[data-a=pnew]),html.lgx .card [data-a=pnew]{background:var(--lg-slab),var(--lg-tint);color:var(--lg-fg);box-shadow:var(--lg-slab-sh)}
+
+/* 6. Top bar: search and every round button share one 44px height, one icon size and one stroke */
+html.lgx .top{align-items:center}
+html.lgx .tacts{gap:8px;align-items:center}
+html.lgx .tacts .ib{width:44px;height:44px;border-radius:22px;padding:0}
+html.lgx .tacts .ib .msi,html.lgx .tacts .lg-up .msi{width:22px;height:22px;stroke-width:1.8}
+html.lgx .sbar{height:44px;border-radius:22px}
+@media (max-width:380px){html.lgx .tacts{gap:6px}html.lgx .tacts .ib{width:40px;height:40px;border-radius:20px}html.lgx .sbar{height:40px;border-radius:20px}}
+/* icons: one stroke weight everywhere */
+html.lgx .msi.sf{stroke-width:1.8}
+html.lgx #setp .li>.msi,html.lgx #menu button .msi{width:22px;height:22px}
+
+/* 7. Lyrics are always upright */
+html.lgx #big.lyr.side{transform:none!important;inset:0!important;width:auto!important;height:auto!important}
+html.lgx #setp input[type=range]::-webkit-slider-runnable-track{background:transparent}
+html.lgx #setp input[type=range]{background:linear-gradient(to right,var(--lg-fg) var(--p,var(--v,50%)),var(--lg-fg3) var(--p,var(--v,50%)))}
+html.lgx[data-glass=off].dark :is(#nav,#mini,#menu,#mb,#qp):not(#z_){background:rgba(38,38,44,.97)}
+html.lgx[data-glass=off].light :is(#nav,#mini,#menu,#mb,#qp):not(#z_){background:rgba(248,248,250,.97)}
+html.lgx .lbar .btn:not(#z_){color:var(--lg-fg)}
+html.lgx .plus{border-radius:22px;background:var(--lg-slab),var(--lg-tint);color:var(--lg-fg);box-shadow:var(--lg-slab-sh)}
+html.lgx .plus .msi{width:40px;height:40px;stroke-width:1.6}
+html.lgx #setp .lt b{flex:none;white-space:nowrap}
+html.lgx .seg button{min-width:0;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+html.lgx .sws{display:flex;flex-wrap:nowrap;gap:10px;overflow-x:auto;padding:2px 0;scrollbar-width:none}
+html.lgx .sws>*{flex:none;width:32px;height:32px;border-radius:50%!important;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.25),0 2px 6px rgba(0,0,0,.25)}
+html.lgx #setp select{max-width:58%;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+/* Android: a higher tint floor on the floating bars, so a list behind them can never read through */
+html.lgx.lg-android:not([data-glass=off]) :is(#nav,#mini):not(#z_){background:rgba(30,30,36,.66)}
+html.lgx.lg-android.light:not([data-glass=off]) :is(#nav,#mini):not(#z_){background:rgba(250,250,252,.74)}
+html.lgx .seg:has(>button:nth-child(4)) button{font-size:12px;padding:0 3px;letter-spacing:-.01em}

@@ -10,10 +10,12 @@ const LG = (() => {
   const NS = 'http://www.w3.org/2000/svg';
   const ua = navigator.userAgent;
   /* Chromium (Chrome, Samsung Internet, Android WebView) renders url() in backdrop-filter; Safari/Firefox parse it but don't */
-  const svgOK = !!(window.CSS && CSS.supports('backdrop-filter', 'url(#a)')) && /Chrome\/\d+/.test(ua) && !/Firefox|FxiOS/.test(ua);
+  /* 1.5.1: Android (phones, WebView, Samsung Internet) reports support but draws nothing, which left glass see-through on a real Samsung; refraction is desktop Chromium only */
+  const svgOK = !!(window.CSS && CSS.supports('backdrop-filter', 'url(#a)')) && /Chrome\/\d+/.test(ua) && !/Firefox|FxiOS|Android|Mobile|SamsungBrowser|; wv\)/.test(ua);
+  if (!(window.CSS && CSS.supports('backdrop-filter', 'blur(2px)'))) H.classList.add('no-svg-bf');
+  if (/Android/.test(ua)) H.classList.add('lg-android');
   const LIVE_MAX = 4;                      /* at most 4 refracting surfaces at once */
   const SURF = [                           /* priority order; first visible ones win */
-    { sel: '#menu', depth: 1.0 }, { sel: '#mb', depth: 0.9 },
     { sel: '#nav', depth: 1.0 }, { sel: '#mini', depth: 1.0 },
     { sel: '#big.show .npp', depth: 1.0 }
   ];
@@ -109,7 +111,7 @@ const LG = (() => {
     H.classList.toggle('lg-svg', svgOK && mode === 'full');
     H.classList.toggle('lg-still', !!S_.rmotion || mq.matches);
     /* the iOS look: rounded square art unless he picked a shape */
-    if (!S_.artShape) H.dataset.art = 'rounded';
+    H.dataset.art = 'rounded';   /* 1.5.1: the M3 cookie/circle masks are gone; glass art is always a rounded square */
     soon();
   };
 
@@ -124,6 +126,15 @@ const LG = (() => {
     lastCover = src;
     H.style.setProperty('--lg-cover', src ? `url("${src.replace(/"/g, '%22')}")` : 'none');
     H.classList.toggle('lg-hascover', !!src);
+    /* a tiny pre-blurred copy for opaque panels (settings): no live blur layers needed there */
+    if (!src) { H.style.removeProperty('--lg-cover-soft'); return; }
+    const im = new Image(); im.crossOrigin = 'anonymous';
+    im.onload = () => { if (src !== lastCover) return; try {
+      const c = document.createElement('canvas'); c.width = c.height = 18; const x = c.getContext('2d');
+      x.filter = 'blur(2px) saturate(1.6)'; x.drawImage(im, -3, -3, 24, 24);
+      H.style.setProperty('--lg-cover-soft', `url("${c.toDataURL('image/png')}")`);
+    } catch (e) { H.style.removeProperty('--lg-cover-soft'); } };
+    im.src = src;
   };
 
   /* ---------- tab bar: the active indicator is a glass droplet that slides and stretches ---------- */
@@ -209,7 +220,7 @@ document.addEventListener('input', e => lgRange(e.target), true);
 setInterval(() => document.querySelectorAll('#vol,#setp input[type=range]').forEach(lgRange), 700);
 
 /* Settings: Glass effects Full / Light / Off (in the Look group) */
-window.glassRow = () => `<div class="li col"><div class="lt"><b>Glass effects</b><span>${LG.svgOK() ? 'Light is blur only' : 'This browser can\'t bend light, so Full looks like Light here.'}</span></div><div class="seg" role="group" data-seg="glass">${[['full', 'Full'], ['light', 'Light'], ['off', 'Off']].map(([v, t]) => `<button data-a="lgset" data-v="${v}" class="${(S.glass || 'full') === v ? 'on' : ''}">${t}</button>`).join('')}</div></div>`;
+window.glassRow = () => `<div class="li col"><div class="lt"><b>Glass effects</b><span>${LG.svgOK() ? 'Full bends light at the edges. Light is blur only.' : 'Full adds the deepest glass. Light is simpler, Off is solid.'}</span></div><div class="seg" role="group" data-seg="glass">${[['full', 'Full'], ['light', 'Light'], ['off', 'Off']].map(([v, t]) => `<button data-a="lgset" data-v="${v}" class="${(S.glass || 'full') === v ? 'on' : ''}">${t}</button>`).join('')}</div></div>`;
 Object.assign(A, { lgset: b => { S.glass = b.dataset.v; save('S', S); LG.apply(); settings(); } });
 const _applyUIGlass = applyUI;
 applyUI = function () { _applyUIGlass(); LG.apply(); };
