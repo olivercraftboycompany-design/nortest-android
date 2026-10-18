@@ -127,20 +127,20 @@ const groupMap = k => {
 };
 function groups(k) {
   const m = groupMap(k);
-  if (sub && m[sub]) { const ids = m[sub]; return `<div class="dhead"><button class="ib" data-a="back" aria-label="Back">${mi('keyboard_arrow_down')}</button></div><div class="phead"><img src="${cover(byId(ids[0]))}" alt=""><div><small>${k === 'albums' ? 'Album' : 'Artist'}</small><h2>${esc(sub)}</h2><span>${ids.length} songs</span><div class="acts"><button class="btn pri" data-a="playall">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="shufall">${mi('shuffle')}Shuffle</button></div></div></div>` + list(ids); }
+  if (sub && m[sub]) { const ids = m[sub]; return `<div class="dhead"><button class="ib" data-a="back" aria-label="Back">${mi('keyboard_arrow_down')}</button></div><div class="phead"><img src="${cover(byId(ids[0]))}" alt=""><div><small>${k === 'albums' ? 'Album' : 'Artist'}</small><h2>${esc(sub)}</h2><span>${nS(ids.length)}</span><div class="acts"><button class="btn pri" data-a="playall">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="shufall">${mi('shuffle')}Shuffle</button></div></div></div>` + list(ids); }
   sub = null;
   const e = Object.entries(m);
-  return e.length ? `<div class="grid">${e.map(([n, ids]) => card(n, ids.length + ' songs', cover(byId(ids[0])), n)).join('')}</div>` : `<p class="empty">Upload songs to see ${k}.</p>`;
+  return e.length ? `<div class="grid">${e.map(([n, ids]) => card(n, nS(ids.length), cover(byId(ids[0])), n)).join('')}</div>` : `<p class="empty">Upload songs to see ${k}.</p>`;
 }
 const pcover = p => cover(byId(p.songs.find(byId)));
 function pHTML() {
   const p = cp();
   if (p) {
     const ids = p.songs.filter(byId);
-    return `<div class="dhead"><button class="ib" data-a="back" aria-label="Back">${mi('keyboard_arrow_down')}</button></div><div class="phead"><img src="${pcover(p)}" alt=""><div><small>Playlist</small><h2>${esc(p.name)}</h2><span>${ids.length} songs</span><div class="acts"><button class="btn pri" data-a="pplay">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="pshuf">${mi('shuffle')}Shuffle</button><button class="btn tonal" data-a="padd">${mi('add')}Add songs</button><button class="btn text" data-a="pren">Rename</button><button class="btn text" data-a="pdel">Delete</button></div></div></div>` + list(ids, 'This playlist is empty. Use Add songs.');
+    return `<div class="dhead"><button class="ib" data-a="back" aria-label="Back">${mi('keyboard_arrow_down')}</button></div><div class="phead"><img src="${pcover(p)}" alt=""><div><small>Playlist</small><h2>${esc(p.name)}</h2><span>${nS(ids.length)}</span><div class="acts"><button class="btn pri" data-a="pplay">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="pshuf">${mi('shuffle')}Shuffle</button><button class="btn tonal" data-a="padd">${mi('add')}Add songs</button><button class="btn text" data-a="pren">Rename</button><button class="btn text" data-a="pdel">Delete</button></div></div></div>` + list(ids, 'This playlist is empty. Use Add songs.');
   }
   sub = null;
-  return `<div class="grid"><div class="card new" data-a="pnew"><div class="plus">${mi('add')}</div><b>New playlist</b><span>&nbsp;</span></div>${pls.map(p => card(p.name, p.songs.filter(byId).length + ' songs', pcover(p), p.id)).join('')}</div>`;
+  return `<div class="grid"><div class="card new" data-a="pnew"><div class="plus">${mi('add')}</div><b>New playlist</b><span>&nbsp;</span></div>${pls.map(p => card(p.name, nS(p.songs.filter(byId).length), pcover(p), p.id)).join('')}</div>`;
 }
 const qList = () => queue.length ? queue.map((id, i) => {
   const s = byId(id);
@@ -375,6 +375,7 @@ const addFiles = async fs => {
 $('#file').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
 
 /* ---------- Modal and menu ---------- */
+function nS(n) { return n + (n === 1 ? ' song' : ' songs'); }
 const mod = h => { $('#mb').innerHTML = h; $('#mod').classList.remove('hid'); };
 const closeMod = () => $('#mod').classList.add('hid');
 /* ---------- Settings page (Material 3: grouped list items, switches, segmented buttons) ---------- */
@@ -413,6 +414,7 @@ async function settings() {
   <div class="li"><div class="lt"><b>Resume where you left off</b><span>Same song and spot when you open the app</span></div>${sw('resume', S.resume !== false)}</div>
   <div class="li"><div class="lt"><b>Swipe the cover</b><span>Left for next, right for previous</span></div>${sw('swipe', S.swipe !== false)}</div>
   ${wakeOK ? `<div class="li"><div class="lt"><b>Keep screen on</b><span>While music is playing</span></div>${sw('awake', !!S.awake)}</div>` : ''}
+  <div class="li"><div class="lt"><b>Full screen</b><span>Hide the phone's status bar</span></div><button class="btn tonal" data-a="fs">Toggle</button></div>
   <div class="li col"><div class="lt"><b>Output device</b></div><select data-s="sink"><option value="">System default</option>${devs.map((d, i) => `<option value="${esc(d.deviceId)}" ${d.deviceId === S.sink ? 'selected' : ''}>${esc(d.label || 'Output ' + (i + 1))}</option>`).join('')}</select></div>
   <div class="li"><div class="lt"><b>Show where audio is playing</b><span>Under the song in the player</span></div>${sw('showOut', S.showOut)}</div>
 </div></section>
@@ -423,19 +425,19 @@ async function settings() {
   <div class="li"><div class="lt"><b>Reset equalizer</b></div><button class="btn text" data-a="eqreset">Reset</button></div>
 </div></section>
 <section class="sg"><h2>Library</h2><div class="card-list">
-  <div class="li col"><div class="lt"><b>Sort songs by</b></div>${seg('sort', S.sort || 'added', [['added', 'Added'], ['title', 'Title'], ['artist', 'Artist'], ['plays', 'Most played']])}</div>
-  ${NN ? `<div class="li"><div class="lt"><b>Music on this phone</b><span>${devPerm === 'granted' ? dev.length + ' songs found' : devPerm === 'blocked' ? 'Access is off' : 'Not allowed yet'}</span></div>${devPerm === 'granted' ? `<button class="btn tonal" data-a="drescan">${devScan ? 'Scanning...' : 'Rescan'}</button>` : `<button class="btn tonal" data-a="${devPerm === 'blocked' ? 'dset' : 'dallow'}">${devPerm === 'blocked' ? 'Open settings' : 'Allow'}</button>`}</div>
+  <div class="li col"><div class="lt"><b>Sort songs by</b></div>${seg('sort', S.sort || 'added', [['added', 'Added'], ['title', 'Title'], ['artist', 'Artist'], ['plays', 'Plays']])}</div>
+  ${NN ? `<div class="li"><div class="lt"><b>Music on this phone</b><span>${devPerm === 'granted' ? nS(dev.length) + ' found' : devPerm === 'blocked' ? 'Access is off' : 'Not allowed yet'}</span></div>${devPerm === 'granted' ? `<button class="btn tonal" data-a="drescan">${devScan ? 'Scanning...' : 'Rescan'}</button>` : `<button class="btn tonal" data-a="${devPerm === 'blocked' ? 'dset' : 'dallow'}">${devPerm === 'blocked' ? 'Open settings' : 'Allow'}</button>`}</div>
   <div class="li"><div class="lt"><b>Show phone songs</b><span>In the library, albums and artists lists</span></div>${sw('showPhone', !S.noPhone)}</div>
   <div class="li col"><div class="lt"><b>Hidden songs</b><span>${hidden.length ? hidden.length + ' hidden from your library' : 'None hidden'}</span></div>${hidden.length ? `<div class="hl-list">${hidden.map(x => `<div class="row" data-id="${x.id}"><img src="${cover(x)}" alt=""><div class="rm"><b>${esc(x.title)}</b><span>${esc(x.artist)}</span></div><button class="btn sm tonal" data-a="dunhide1">Unhide</button></div>`).join('')}</div><button class="btn text" data-a="dunhide">Unhide all</button>` : ''}</div>` : ''}
   <div class="li col"><div class="lt"><b>Hide short clips</b><span data-out="minLen">${NUM.minLen(+S.minLen || 0)}</span></div><input type="range" data-n="minLen" min="0" max="120" step="5" value="${+S.minLen || 0}"></div>
   <div class="li"><div class="lt"><b>Songs in your library</b><span>${own().length} imported${NN ? ' + ' + songs.filter(x => x.device).length + ' on this phone' : ''}, ${pls.length} playlists</span></div><button class="btn tonal" data-a="upload">Upload</button></div>
-  <div class="li"><div class="lt"><b>Clear play history</b><span>${hist.length} songs in History</span></div><button class="btn text" data-a="hclr2">Clear</button></div>
+  <div class="li"><div class="lt"><b>Clear play history</b><span>${nS(hist.length)} in History</span></div><button class="btn text" data-a="hclr2">Clear</button></div>
   <div class="li"><div class="lt"><b>Rebuild library</b><span>Reload everything from storage${NN ? ' and rescan the phone' : ''}</span></div><button class="btn text" data-a="rebuild">Rebuild</button></div>
 </div></section>
 <section class="sg"><h2>Stats</h2><div class="card-list">${(() => { const st = stats(); return `
   <div class="li"><div class="lt"><b>${st.total} songs &middot; ${hm(st.sec)} listened</b><span>Listening time counts from version 1.4</span></div><button class="btn text" data-a="clrstats">Reset</button></div>
-  <div class="li col"><div class="lt"><b>Top songs</b></div>${st.top.length ? `<ol class="top5">${st.top.map(([x, n]) => `<li><span>${esc(x.title)}</span><em>${n} plays</em></li>`).join('')}</ol>` : '<span class="mut">Play some songs first</span>'}</div>
-  <div class="li col"><div class="lt"><b>Top artists</b></div>${st.topA.length ? `<ol class="top5">${st.topA.map(([a, n]) => `<li><span>${esc(a)}</span><em>${n} plays</em></li>`).join('')}</ol>` : '<span class="mut">Play some songs first</span>'}</div>`; })()}
+  <div class="li col"><div class="lt"><b>Top songs</b></div>${st.top.length ? `<ol class="top5">${st.top.map(([x, n]) => `<li><span>${esc(x.title)}</span><em>${n} ${n === 1 ? 'play' : 'plays'}</em></li>`).join('')}</ol>` : '<span class="mut">Play some songs first</span>'}</div>
+  <div class="li col"><div class="lt"><b>Top artists</b></div>${st.topA.length ? `<ol class="top5">${st.topA.map(([a, n]) => `<li><span>${esc(a)}</span><em>${n} ${n === 1 ? 'play' : 'plays'}</em></li>`).join('')}</ol>` : '<span class="mut">Play some songs first</span>'}</div>`; })()}
 </div></section>
 <section class="sg"><h2>Backup &amp; restore</h2><div class="card-list"><div class="bk-slot"></div>
   <div class="li"><div class="lt"><b>Back up or restore</b><span>One .zip with your songs, playlists, favorites and settings</span></div><button class="btn tonal" data-a="backup">Open</button></div>
@@ -543,7 +545,7 @@ Object.assign(A, {
     ...(queue.includes(id) ? [['Remove from queue', 'qrmid']] : []),
     [s.fav ? 'Remove from favorites' : 'Add to favorites', 'fav'], ['Edit details', 'edit'], ['Add to playlist', 'topl'],
     ...(view === 'playlists' && sub ? [['Remove from this playlist', 'prm']] : []), s.device ? ['Hide from library', 'dhide'] : ['Delete song', 'sdel']];
-    const MI = { qnext: 'playlist_play', qadd: 'queue_music', qrmid: 'queue_music', fav: 'favorite', edit: 'lyrics', topl: 'add', prm: 'playlist_play', dhide: 'history', sdel: 'add' };
+    const MI = { qnext: 'play_next', qadd: 'queue_music', qrmid: 'playlist_remove', fav: 'favorite', edit: 'edit', topl: 'playlist_add', prm: 'playlist_remove', dhide: 'eye_off', sdel: 'trash' };
     m.innerHTML = `<div class="mh"><img src="${cover(s)}" alt=""><div><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div></div>` + it.map(([t, a]) => `<button data-a="${a}" data-id="${id}" class="mx-${a}">${mi(MI[a] || 'add', a === 'fav' && s.fav)}<span>${t}</span></button>`).join('');
     m.classList.remove('hid');
     m.style.top = Math.max(8, Math.min(r.bottom, innerHeight - m.offsetHeight - 8)) + 'px';
@@ -631,14 +633,23 @@ Object.assign(A, {
 });
 addEventListener('dragover', e => e.preventDefault());
 addEventListener('drop', e => { e.preventDefault(); addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('audio/'))); });
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    if (!$('#mod').classList.contains('hid')) closeMod();
-    else if ($('#qp').classList.contains('open')) A.qpx();
-    else if ($('#big').classList.contains('lyr')) A.lyrx();
-    else A.close();
-    return;
+/* Back (Android back gesture via the app shell, or Esc): close the top-most open layer; false = nothing was open */
+window.__nortestBack = () => {
+  const open = s => { const e = $(s); return e && !e.classList.contains('hid'); };
+  if (open('#menu')) { $('#menu').classList.add('hid'); const sc = $('#scrim'); if (sc) sc.classList.add('hid'); return true; }
+  if (open('#mod')) { closeMod(); return true; }
+  if ($('#qp').classList.contains('open')) { A.qpx(); return true; }
+  if ($('#big').classList.contains('show')) {
+    if ($('#big').classList.contains('lyr')) A.lyrx(); else A.close();
+    return true;
   }
+  if (open('#setp')) { closeSettings(); return true; }
+  if (sub) { sub = null; render(); return true; }
+  if (view === 'artists' || view === 'history') { view = 'library'; render(); return true; }
+  return false;
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { window.__nortestBack(); return; }
   if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.ctrlKey || e.metaKey) return;
   const k = { ' ': A.toggle, ArrowRight: A.f10, ArrowLeft: A.b10, n: next, p: prev, s: A.shuf, r: A.rep, l: A.lyr, f: () => A.fav({}), m: () => { au.muted = !au.muted; } }[e.key];
   if (k) { e.preventDefault(); k(); }

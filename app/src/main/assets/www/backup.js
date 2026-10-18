@@ -169,7 +169,8 @@
 
   /* ---------- header button + "last backup" nudge ---------- */
   const settingsBtn = document.querySelector('header.top [data-a=settings]');
-  if (settingsBtn) settingsBtn.insertAdjacentHTML('beforebegin', `<button class="ib" data-a="backup" id="bkBtn" aria-label="Backup" title="Back up or restore your songs">${typeof mi === 'function' ? mi('backup') : 'Backup'}</button>`);
+  /* 1.5.2: the top-bar cloud button is gone (it crowded search on phones); Backup & restore lives in Settings */
+  void settingsBtn;
   let lastBackup = 0;
   const nudge = () => {
     const due = own().length > 0 && (!lastBackup || Date.now() - lastBackup > 14 * DAY);
