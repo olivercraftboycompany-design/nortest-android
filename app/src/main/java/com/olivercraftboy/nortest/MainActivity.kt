@@ -102,8 +102,13 @@ class MainActivity : ComponentActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // Back keeps the music going: send the app to the background instead of closing it.
-                moveTaskToBack(true)
+                // Back first closes whatever is open in the app (menu, dialog, queue, player, settings, a sub-page).
+                // With nothing open, Back keeps the music going: send the app to the background instead of closing it.
+                val wv = webView
+                if (wv == null) { moveTaskToBack(true); return }
+                wv.evaluateJavascript("(function(){try{return !!(window.__nortestBack&&window.__nortestBack())}catch(e){return false}})()") { r ->
+                    if (r != "true") moveTaskToBack(true)
+                }
             }
         })
     }
