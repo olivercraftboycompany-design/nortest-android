@@ -97,6 +97,13 @@ icon and tap **Check for updates**. Your songs stay; every release is signed wit
   page running and at full priority while the screen is off, holds a wake lock while
   music plays, and never pauses the page when you leave the app.
 
+## Look (1.3)
+
+`www/glass.css` + `www/glass.js` give the Liquid Glass look (shared with the website): floating glass
+tab bar and mini player on phones, album-art tinted background, frosted panels, springy animations.
+They only change looks; if blur makes scrolling lag, `glass.js` switches to solid tinted glass for
+that session (`body.ng-lite`).
+
 ## Building
 
 GitHub Actions builds, tests, lints and signs the APK on every push
