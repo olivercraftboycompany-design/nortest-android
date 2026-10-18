@@ -1,0 +1,35 @@
+name: Native 0.1 release
+
+# Lives only on the native-0.1-assets branch. Builds nothing: it joins the uploaded files,
+# checks every sha256, and publishes them as the native-0.1 PRE-release (never "latest",
+# so releases/latest/download/Nortest.apk keeps pointing at the real Nortest release).
+on:
+  push:
+    branches: [native-0.1-assets]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Join split files and check sha256
+        run: |
+          set -e
+          cat parts/BibleyNative-0.1-test.apk.part* > apks/BibleyNative-0.1-test.apk
+          cd apks && sha256sum -c ../SHA256SUMS && ls -l
+      - name: Publish the native-0.1 pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          if gh release view native-0.1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload native-0.1 apks/* --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create native-0.1 apks/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --prerelease --latest=false --title "Native apps 0.1 (test builds)" --notes-file NOTES.md
+          fi
+          gh release view native-0.1 --repo "$GITHUB_REPOSITORY" --json tagName,isPrerelease,assets --jq '.tagName, .isPrerelease, (.assets[] | "\(.name) \(.size)")'

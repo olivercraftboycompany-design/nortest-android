@@ -1,0 +1,252 @@
+{
+ "version": 1,
+ "updated": "2026-10-18",
+ "sections": [
+  {
+   "id": "recommended",
+   "title": "Recommended",
+   "apps": [
+    {
+     "id": "nortest",
+     "name": "Nortest",
+     "pkg": "com.olivercraftboy.nortestnative",
+     "icon": "nortest",
+     "native": true,
+     "versionCode": 3,
+     "versionName": "0.3",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/NortestNative-0.3-test.apk",
+     "size": 2425581,
+     "sha256": "af0c8f694a5d4efcaa04f012a1bf0f19662e3ab039a343ede7944c1d9655cfb4",
+     "what": "Your music"
+    },
+    {
+     "id": "bibley",
+     "name": "Bibley",
+     "pkg": "com.olivercraftboy.bibley",
+     "icon": "bibley",
+     "native": false,
+     "versionCode": 5,
+     "versionName": "1.4",
+     "url": "https://oliver-apps.sites.tab.bot/apks/Bibley.apk",
+     "size": 3373610,
+     "sha256": "16af52c2f102587089cde12ec7b36c96367d88b87cddbc9e839d965cbdf4364f",
+     "what": "Bible reader + study"
+    },
+    {
+     "id": "calendar",
+     "name": "NEXUS Calendar",
+     "pkg": "com.olivercraftboy.nexuscalendar.native",
+     "icon": "calendar",
+     "native": true,
+     "versionCode": 1,
+     "versionName": "0.1",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/NexusCalendarNative-0.1-test.apk",
+     "size": 1427680,
+     "sha256": "6c3e5bf8028bb316bd9f703ab0d6fe164531f29349021a4dcc6d2ad45f92bb03",
+     "what": "Events, homework, reminders"
+    },
+    {
+     "id": "weather",
+     "name": "Ultimate Weather",
+     "pkg": "com.olivercraftboy.ultimateweather",
+     "icon": "weather",
+     "native": false,
+     "versionCode": 5,
+     "versionName": "1.4",
+     "url": "https://oliver-apps.sites.tab.bot/apks/Ultimate-Weather.apk",
+     "size": 2323745,
+     "sha256": "054ffc45a268b1b31103dcd7e1f7fa94cadaf13dab67662e84626a78315f3eeb",
+     "what": "Forecast, radar, alerts"
+    },
+    {
+     "id": "alarm",
+     "name": "NEXUS Alarm",
+     "pkg": "com.olivercraftboy.nexusalarm.native",
+     "icon": "alarm",
+     "native": true,
+     "versionCode": 1,
+     "versionName": "0.1",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/NexusAlarmNative-0.1-test.apk",
+     "size": 1563244,
+     "sha256": "d2886a03a42b7214f9d39d03f52617f8a4aa4f4493b1b0f5bfe1c56aff177967",
+     "what": "Alarms, reminders, timer"
+    },
+    {
+     "id": "news",
+     "name": "NEXUS News",
+     "pkg": "com.olivercraftboy.nexusnews.native",
+     "icon": "news",
+     "native": true,
+     "versionCode": 1,
+     "versionName": "0.1",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/NexusNewsNative-0.1-test.apk",
+     "size": 1364632,
+     "sha256": "a7c07774120ca1098dcdd26d9473f128949e678671055465070802426e63501d",
+     "what": "Headlines from 40 sources"
+    },
+    {
+     "id": "apol",
+     "name": "Apologetics 101",
+     "pkg": "com.olivercraftboy.apologetics101.native",
+     "icon": "apol",
+     "native": true,
+     "versionCode": 1,
+     "versionName": "0.1",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/Apologetics101Native-0.1-test.apk",
+     "size": 1475746,
+     "sha256": "08c8c5efe6c444e1aa95259a544e0c160826c4d44dc6588c608074c2f2df0019",
+     "what": "Articles, answers, quiz"
+    },
+    {
+     "id": "hub",
+     "name": "NEXUS Hub",
+     "pkg": "com.olivercraftboy.nexushub.native",
+     "icon": "hub",
+     "native": true,
+     "versionCode": 2,
+     "versionName": "0.2-test",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/NexusHubNative-0.2-test.apk",
+     "size": 1631703,
+     "sha256": "e3c03b5e9ee6ab99df0a4c66e43e561a6918e2ecc43f297687168213349fd88c",
+     "what": "All your apps in one place"
+    }
+   ]
+  },
+  {
+   "id": "all",
+   "title": "All apps",
+   "apps": [
+    {
+     "id": "bibley",
+     "name": "Bibley",
+     "pkg": "com.olivercraftboy.bibley.native",
+     "icon": "bibley",
+     "native": true,
+     "versionCode": 1,
+     "versionName": "0.1",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/BibleyNative-0.1-test.apk",
+     "size": 21892606,
+     "sha256": "36e6d6cfacc7ff71ac871fb35b50ddfeed53a459e77b39ee4ee3a0aa726a1c82",
+     "what": "Bible reader + study"
+    },
+    {
+     "id": "weather",
+     "name": "Ultimate Weather",
+     "pkg": "com.olivercraftboy.ultimateweather.native",
+     "icon": "weather",
+     "native": true,
+     "versionCode": 1,
+     "versionName": "0.1",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/UltimateWeatherNative-0.1-test.apk",
+     "size": 1529556,
+     "sha256": "d3b69e9eac60f1b9f1cd45cf9ed47c63ee670aa45d2cfa508eb43ac4572a2f65",
+     "what": "Forecast, radar, alerts"
+    },
+    {
+     "id": "weedx",
+     "name": "Weed-X",
+     "pkg": "com.olivercraftboy.weedx.native",
+     "icon": "weedx",
+     "native": true,
+     "versionCode": 1,
+     "versionName": "0.1",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/download/native-0.1/WeedXNative-0.1-test.apk",
+     "size": 1309296,
+     "sha256": "fd8e5665f03a79c8a72c683fd0afa41f5bf76097c0cabe1175bbc29a774133de",
+     "what": ""
+    },
+    {
+     "id": "nortest",
+     "name": "Nortest",
+     "pkg": "com.olivercraftboy.nortest",
+     "icon": "nortest",
+     "native": false,
+     "versionCode": 14,
+     "versionName": "1.6.2",
+     "url": "https://github.com/olivercraftboycompany-design/nortest-android/releases/latest/download/Nortest.apk",
+     "size": 2213760,
+     "sha256": "39e93cccc5d5f4a91a03d5e49a047d004f3640af707858000db525482385be51",
+     "what": "Your music"
+    },
+    {
+     "id": "calendar",
+     "name": "NEXUS Calendar",
+     "pkg": "com.olivercraftboy.nexuscalendar",
+     "icon": "calendar",
+     "native": false,
+     "versionCode": 5,
+     "versionName": "1.4",
+     "url": "https://oliver-apps.sites.tab.bot/apks/NEXUS-Calendar.apk",
+     "size": 2303405,
+     "sha256": "eae103ed69731ed5c6f0be69f8e13dd9fead0e70f9a225acf44f46ea4c76ff67",
+     "what": "Events, homework, reminders"
+    },
+    {
+     "id": "alarm",
+     "name": "NEXUS Alarm",
+     "pkg": "com.olivercraftboy.nexusalarm",
+     "icon": "alarm",
+     "native": false,
+     "versionCode": 2,
+     "versionName": "1.1",
+     "url": "https://oliver-apps.sites.tab.bot/apks/NEXUS-Alarm.apk",
+     "size": 2500631,
+     "sha256": "d757f5afe6afa57c70bab361e49a69c515071daeae6094d29b81baacebd15485",
+     "what": "Alarms, reminders, timer"
+    },
+    {
+     "id": "news",
+     "name": "NEXUS News",
+     "pkg": "com.olivercraftboy.nexusnews",
+     "icon": "news",
+     "native": false,
+     "versionCode": 2,
+     "versionName": "1.1",
+     "url": "https://oliver-apps.sites.tab.bot/apks/NEXUS-News.apk",
+     "size": 2266374,
+     "sha256": "5380e5141060cedaba20992f481826480a16fc814dc1f33387a73a896cecf8a8",
+     "what": "Headlines"
+    },
+    {
+     "id": "hub",
+     "name": "NEXUS Hub",
+     "pkg": "com.olivercraftboy.nexushub",
+     "icon": "hub",
+     "native": false,
+     "versionCode": 2,
+     "versionName": "1.1",
+     "url": "https://oliver-apps.sites.tab.bot/apks/NEXUS-Hub.apk",
+     "size": 3333517,
+     "sha256": "ffdae983fac91f2f24be319ac68e20d1dbfdbe2a29b33a3a35ac623b3d1912c6",
+     "what": "All your apps in one place"
+    },
+    {
+     "id": "apol",
+     "name": "Apologetics 101",
+     "pkg": "com.olivercraftboy.apologetics101",
+     "icon": "apol",
+     "native": false,
+     "versionCode": 2,
+     "versionName": "1.1",
+     "url": "https://oliver-apps.sites.tab.bot/apks/Apologetics101.apk",
+     "size": 2826142,
+     "sha256": "d710c1fb4daa680c149b435e328c91c6b6a54bcb1797ed3910affbbf76eaa582",
+     "what": "Articles, answers, quiz"
+    },
+    {
+     "id": "weedx",
+     "name": "Weed-X",
+     "pkg": "com.olivercraftboy.weedx",
+     "icon": "weedx",
+     "native": false,
+     "versionCode": 2,
+     "versionName": "1.1",
+     "url": "https://oliver-apps.sites.tab.bot/apks/Weed-X.apk",
+     "size": 2325831,
+     "sha256": "c95e51d27730ffd0c32632b3cf91c18ec69c10e8cbb237327b59994463875792",
+     "what": ""
+    }
+   ]
+  }
+ ]
+}
