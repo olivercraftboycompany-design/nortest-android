@@ -14,6 +14,7 @@ const LG = (() => {
   const svgOK = !!(window.CSS && CSS.supports('backdrop-filter', 'url(#a)')) && /Chrome\/\d+/.test(ua) && !/Firefox|FxiOS|Android|Mobile|SamsungBrowser|; wv\)/.test(ua);
   if (!(window.CSS && CSS.supports('backdrop-filter', 'blur(2px)'))) H.classList.add('no-svg-bf');
   if (/Android/.test(ua)) H.classList.add('lg-android');
+  H.classList.add('lgp');   /* 1.5.2 subtle polish layer (glass.css 'lgp' rules) */
   const LIVE_MAX = 4;                      /* at most 4 refracting surfaces at once */
   const SURF = [                           /* priority order; first visible ones win */
     { sel: '#nav', depth: 1.0 }, { sel: '#mini', depth: 1.0 },
@@ -137,6 +138,33 @@ const LG = (() => {
     im.src = src;
   };
 
+
+  /* ---------- Android: how much of the bottom the floating mini player + tab bar cover ---------- */
+  const dock = () => {
+    if (!H.classList.contains('lg-android')) return;
+    const land = matchMedia('(orientation:landscape) and (max-height:500px)').matches;
+    let top = innerHeight;
+    ['#mini', '#nav'].forEach(s => { const e = document.querySelector(s); if (!e || !e.offsetParent && getComputedStyle(e).position !== 'fixed') return;
+      const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return;
+      const r = e.getBoundingClientRect(); if (!r.height || (land && s === '#nav')) return; top = Math.min(top, r.top); });
+    H.style.setProperty('--lg-dock', Math.max(0, Math.round(innerHeight - top + 6)) + 'px');
+  };
+  addEventListener('resize', () => setTimeout(dock, 60));
+  new MutationObserver(() => setTimeout(dock, 30)).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  setTimeout(dock, 300); setInterval(dock, 2500);
+
+
+  /* ---------- his own wallpaper (Settings > Background) also sits behind Settings, so every screen matches ---------- */
+  const wallSync = () => {
+    const c = document.querySelector('.bg .cbg'); let bi = 'none';
+    try { if (c && document.body.classList.contains('cbg-on')) bi = getComputedStyle(c).backgroundImage || 'none'; } catch (e) { }
+    const on = bi && bi !== 'none' && !/gradient\(/.test(bi) ? bi : '';
+    if (on) H.style.setProperty('--lg-wall', on); else H.style.removeProperty('--lg-wall');
+    H.classList.toggle('lg-wall', !!on);
+  };
+  new MutationObserver(() => setTimeout(wallSync, 50)).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  setTimeout(wallSync, 400); setInterval(wallSync, 3000);
+
   /* ---------- tab bar: the active indicator is a glass droplet that slides and stretches ---------- */
   let dropEl, lastX = null;
   const placeDrop = () => {
@@ -145,6 +173,11 @@ const LG = (() => {
     const on = nav.querySelector('button.on'); if (!on) { dropEl.style.opacity = 0; return; }
     const nr = nav.getBoundingClientRect(), br = on.getBoundingClientRect();
     if (!nr.width) return;
+    if (nr.height > nr.width * 1.5) {      /* sideways phone: the tab bar is a vertical rail */
+      const y = br.top - nr.top; dropEl.style.opacity = 1; dropEl.style.width = (nr.width - 8) + 'px'; dropEl.style.height = br.height + 'px';
+      dropEl.style.transform = `translate(4px,${y}px)`; lastX = null; return;
+    }
+    dropEl.style.removeProperty('height');
     const w = Math.min(br.width + 6, 84), x = br.left - nr.left + (br.width - w) / 2;
     dropEl.style.opacity = 1; dropEl.style.width = w + 'px';
     if (lastX === null || H.classList.contains('lg-still')) { dropEl.style.transform = `translateX(${x}px)`; lastX = x; return; }

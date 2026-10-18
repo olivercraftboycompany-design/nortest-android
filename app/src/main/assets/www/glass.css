@@ -374,3 +374,80 @@ html.lgx #setp select{max-width:58%;text-overflow:ellipsis;white-space:nowrap;ov
 html.lgx.lg-android:not([data-glass=off]) :is(#nav,#mini):not(#z_){background:rgba(30,30,36,.66)}
 html.lgx.lg-android.light:not([data-glass=off]) :is(#nav,#mini):not(#z_){background:rgba(250,250,252,.74)}
 html.lgx .seg:has(>button:nth-child(4)) button{font-size:12px;padding:0 3px;letter-spacing:-.01em}
+/* 1.5.1+: sideways phones - the glass tab bar becomes a vertical rail on the left */
+@media (orientation:landscape) and (max-height:500px){
+  html.lgx #nav{position:fixed;left:8px;right:auto;top:calc(8px + env(safe-area-inset-top));bottom:8px;width:72px;height:auto;flex-direction:column;justify-content:center;gap:2px;padding:6px 0;border-radius:30px}
+  html.lgx #nav button{flex:0 0 auto;width:100%;height:58px;border-radius:24px}
+  html.lgx .lg-drop{top:0;left:0}
+  html.lgx #mini{left:92px;right:12px;bottom:8px}
+  html.lgx #view{padding-bottom:calc(var(--mini-h) + 32px)}
+}
+/* narrow phones (his Samsung is ~369px wide): the full-screen button moves to Settings so search has room */
+@media (max-width:400px){html.lgx .tacts [data-a=fs]{display:none}}
+html.lgx #menu .mx-sdel .msi{transform:none}
+
+/* ================= nortest 1.5.2 - fixes ================= */
+/* ---------- his circled fixes ---------- */
+/* segmented pills: equal columns, never clipped, same control everywhere */
+html.lgx .seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%;min-width:0;height:36px;padding:2px;gap:2px;border-radius:18px}
+html.lgx .seg button,html.lgx .seg:has(>button:nth-child(4)) button{min-width:0;padding:0 2px;font-size:13px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:clip}
+html.lgx .seg:has(>button:nth-child(6)) button{font-size:12.5px}
+html.lgx #setp .li.col{gap:10px}
+html.lgx #setp .li.col>.lt{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+html.lgx #setp .li.col>.lt span{text-align:right;min-width:0}
+/* Background group: wrappers vanish so every row is a real row inside the card */
+html.lgx #setp .bgr:not(.li){display:contents}
+html.lgx #setp .bgr.hid,html.lgx #setp .bgr.hid>*{display:none!important}
+html.lgx #setp .li>.btn,html.lgx #setp .li>select,html.lgx #setp .li>input[type=color]{flex:none;width:auto;margin:0}
+html.lgx #setp .li>input[type=color]{width:34px;height:34px;border-radius:50%;border:0;padding:0;background:none}
+html.lgx #setp .li>.lt{flex:1 1 auto}
+html.lgx #setp input[type=url]{width:100%}
+/* New playlist tile: same footprint as the other tiles */
+html.lgx .card.new .plus{aspect-ratio:1;border-radius:16px;margin:0 0 10px}
+html.lgx .card.new .plus .msi{width:36px;height:36px}
+/* Android: content ends above the floating mini player + tab bar (nothing slides under them) */
+html.lgx.lg-android .main{height:calc(100% - var(--lg-dock,0px))}
+html.lgx.lg-android #view{padding-bottom:20px;-webkit-mask:linear-gradient(to bottom,#000 calc(100% - 18px),transparent);mask:linear-gradient(to bottom,#000 calc(100% - 18px),transparent)}
+html.lgx.lg-android body.cbg-on #view{-webkit-mask:none;mask:none}
+
+html.lgx #setp .bgr.li{display:flex}
+html.lgx #setp .bgr.li.hid{display:none!important}
+html.lgx .mrow .btn{min-width:0;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* landscape: the queue is a panel on the right, the player stays visible on the left */
+@media (orientation:landscape) and (max-height:500px){
+  html.lgx #qp:not(#z_){left:auto;right:0;top:0;bottom:0;height:auto;width:min(480px,58%);border-radius:28px 0 0 28px;transform:translateX(105%);background:rgba(26,26,32,.94);padding-top:4px}
+  html.lgx.light #qp:not(#z_){background:rgba(248,248,250,.95)}
+  html.lgx #qp.open:not(#z_){transform:none}
+  html.lgx #qp::before{display:none}
+}
+/* ================= 1.5.2 subtle polish ("1.5.1 but more polished"): crisper rim, faint top highlight,
+   a touch more depth, one radius scale, gentle press feedback. No color, no rainbow. Gate: html.lgp ================= */
+html.lgx.lgp :is(#nav,#mini,.npp,#menu,#mb,.chip,.lbar .btn,.sbar,.tacts .ib,.bt .ib,#setp .card-list,#setp .sh .ib,.seg,#qp,.devban)::after{
+  padding:1.25px;background:linear-gradient(140deg,rgba(255,255,255,.80) 0%,rgba(255,255,255,.16) 26%,rgba(255,255,255,.04) 50%,rgba(255,255,255,.14) 74%,rgba(255,255,255,.42) 100%)}
+html.lgx.lgp.light :is(#nav,#mini,.npp,#menu,#mb,.chip,.lbar .btn,.sbar,.tacts .ib,.bt .ib,#setp .card-list,#setp .sh .ib,.seg,#qp,.devban)::after{
+  background:linear-gradient(140deg,#fff 0%,rgba(255,255,255,.55) 26%,rgba(255,255,255,.2) 50%,rgba(255,255,255,.5) 74%,#fff 100%)}
+html.lgx.lgp :is(#nav,#mini,#menu,#mb,#qp,#setp .card-list,.npp):not(#z_){
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),inset 0 0 0 .5px var(--lg-hair),inset 0 0 20px rgba(255,255,255,.04),0 12px 30px rgba(0,0,0,.30),0 2px 6px rgba(0,0,0,.18)}
+html.lgx.lgp :is(.chip,.lbar .btn,.sbar,.tacts .ib,.bt .ib,#setp .sh .ib,.seg,.btn:not(.text)):not(#z_){
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 .5px var(--lg-hair),0 4px 12px rgba(0,0,0,.20)}
+html.lgx.lgp.light :is(#nav,#mini,#menu,#mb,#qp,#setp .card-list,.npp):not(#z_){
+  box-shadow:inset 0 1px 0 #fff,inset 0 0 0 .5px var(--lg-hair),0 12px 30px rgba(20,20,40,.12),0 2px 6px rgba(20,20,40,.07)}
+html.lgx.lgp.light :is(.chip,.lbar .btn,.sbar,.tacts .ib,.bt .ib,#setp .sh .ib,.seg,.btn:not(.text)):not(#z_){
+  box-shadow:inset 0 1px 0 #fff,inset 0 0 0 .5px var(--lg-hair),0 4px 12px rgba(20,20,40,.08)}
+/* one radius scale: pills fully round, cards 24, sheets/dialogs 30, list art 10, grid art 16, player art 22 */
+html.lgx.lgp #setp .card-list{border-radius:24px}
+html.lgx.lgp :is(#mb,#menu){border-radius:30px}
+html.lgx.lgp .row img{border-radius:10px}
+html.lgx.lgp .card img,html.lgx.lgp .card.new .plus{border-radius:16px}
+/* gentle press feedback */
+html.lgx.lgp :is(.btn,.chip,.tacts .ib,.bt .ib,.bb .ib,.tr>.ib,#mini .ib,.seg button,.card,.row){transition:transform .18s var(--lg-ease),filter .18s,background-color .2s}
+html.lgx.lgp :is(.btn,.chip,.tacts .ib,.bt .ib,.bb .ib,.tr>.ib,#mini .ib,.seg button):active{transform:scale(.95);filter:brightness(1.12)}
+html.lgx.lgp :is(.card):active{transform:scale(.98)}
+@media (hover:hover){html.lgx.lgp :is(.btn,.chip,.tacts .ib,.bt .ib):hover{filter:brightness(1.1)}}
+/* 1.5.2: no volume slider in Now Playing (the phone's volume buttons do it); the transport rows stay centered */
+html.lgx #big .vr{display:none!important}
+html.lgx #big .tr{justify-content:center;gap:clamp(8px,4vw,22px)}
+html.lgx #big .bb{justify-content:space-evenly}
+html.lgx.lg-wall #setp{background:linear-gradient(180deg,rgba(0,0,0,.40),rgba(0,0,0,.56)),var(--lg-wall) center/cover no-repeat,#141418}
+html.lgx.lg-wall.light #setp{background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.62)),var(--lg-wall) center/cover no-repeat,#f2f2f7}

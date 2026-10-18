@@ -1,5 +1,11 @@
 /* nortest 1.5 - SF-style line icons (24 grid, 1.75 stroke, round caps). mi() in m3.js uses these first. */
 window.SFI = {
+ edit:'<path d="M4.6 19.4l1-4.1L15.9 5a2 2 0 0 1 2.8 0l.3.3a2 2 0 0 1 0 2.8L8.7 18.4z"/><path d="M13.9 7l3.1 3.1"/>',
+ trash:'<path d="M4.6 6.8h14.8"/><path d="M9.3 6.8V5.3a1.4 1.4 0 0 1 1.4-1.4h2.6a1.4 1.4 0 0 1 1.4 1.4v1.5"/><path d="M6.4 6.8l.8 11.5a1.8 1.8 0 0 0 1.8 1.7h6a1.8 1.8 0 0 0 1.8-1.7l.8-11.5"/><path d="M10.2 10.6v5.8M13.8 10.6v5.8"/>',
+ eye_off:'<path d="M3.6 12S6.6 6.2 12 6.2s8.4 5.8 8.4 5.8-3 5.8-8.4 5.8S3.6 12 3.6 12z"/><circle cx="12" cy="12" r="2.5"/><path d="M4.6 4.6l14.8 14.8"/>',
+ play_next:'<path d="M4 6.6h11M4 11.6h7.5M4 16.6h7.5"/><path class="fl" d="M15.2 12.6v6.2l5.1-3.1z"/>',
+ playlist_add:'<path d="M4 6.6h12M4 11.6h12M4 16.6h7"/><path d="M17.6 14.1v7M14.1 17.6h7"/>',
+ playlist_remove:'<path d="M4 6.6h12M4 11.6h12M4 16.6h7"/><path d="M14.1 17.6h7"/>',
  library_music:'<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><path d="M10.2 15.6V8.4l5.6-1.3v7.1"/><circle cx="8.6" cy="15.6" r="1.7"/><circle cx="14.2" cy="14.2" r="1.7"/>',
  favorite:'<path d="M12 20.2c-.3 0-7.7-4.6-7.7-10.4A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.7 2.6c0 5.8-7.4 10.4-7.7 10.4z"/>',
  album:'<circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="2.3"/><path d="M12 6.2a5.8 5.8 0 0 1 5.8 5.8"/>',
