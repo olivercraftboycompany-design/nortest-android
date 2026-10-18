@@ -14,7 +14,7 @@ const LG = (() => {
   const svgOK = !!(window.CSS && CSS.supports('backdrop-filter', 'url(#a)')) && /Chrome\/\d+/.test(ua) && !/Firefox|FxiOS|Android|Mobile|SamsungBrowser|; wv\)/.test(ua);
   if (!(window.CSS && CSS.supports('backdrop-filter', 'blur(2px)'))) H.classList.add('no-svg-bf');
   if (/Android/.test(ua)) H.classList.add('lg-android');
-  H.classList.add('lgp');   /* 1.5.2 subtle polish layer (glass.css 'lgp' rules) */
+  H.classList.add('lg15');  /* 1.6.1: the 1.5 Liquid Glass look (glass.css 'lg15' rules); 1.5.2's 'lgp' layer is retired */
   const LIVE_MAX = 4;                      /* at most 4 refracting surfaces at once */
   const SURF = [                           /* priority order; first visible ones win */
     { sel: '#nav', depth: 1.0 }, { sel: '#mini', depth: 1.0 },

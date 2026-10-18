@@ -451,3 +451,49 @@ html.lgx #big .tr{justify-content:center;gap:clamp(8px,4vw,22px)}
 html.lgx #big .bb{justify-content:space-evenly}
 html.lgx.lg-wall #setp{background:linear-gradient(180deg,rgba(0,0,0,.40),rgba(0,0,0,.56)),var(--lg-wall) center/cover no-repeat,#141418}
 html.lgx.lg-wall.light #setp{background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.62)),var(--lg-wall) center/cover no-repeat,#f2f2f7}
+
+/* ================= 1.6.1: the 1.5 Liquid Glass look is back (gate html.lg15; glass.js sets it instead of 1.5.2's lgp).
+   Same 1.5 tint, rims, highlights, blur and colors; every 1.5.1/1.5.2/1.6 layout fix stays. Samsung-safe: nothing here
+   needs the SVG url() refraction, and every surface that can sit over text keeps a solid floor. ================= */
+/* 1. the deep 1.5 background behind the library (1.5 showed the plain dark surface, no cover wash) */
+html.lgx.lg15 .bg::before,html.lgx.lg15 .bg::after{display:none}
+/* 2. 1.5 glass material: light tint, 1px 135deg rim, inner glow */
+html.lgx.lg15{--lg-tint:rgba(30,30,36,.26);--lg-tint-strong:rgba(22,22,28,.52);--lg-blur:14px;--lg-sat:1.9}
+html.lgx.lg15.light{--lg-tint:rgba(255,255,255,.34);--lg-tint-strong:rgba(250,250,252,.66)}
+html.lgx.lg15 :is(#setp .card-list,.bk-card,.plus,.card:is(.new,.add,[data-a=pnew]),.card [data-a=pnew]):not(#z_){background:var(--lg-tint);
+  box-shadow:inset 0 0 0 .5px var(--lg-hair),inset 0 1px 1px var(--lg-glow),inset 0 0 18px var(--lg-glow);border-radius:26px}
+html.lgx.lg15 :is(.plus,.card:is(.new,.add,[data-a=pnew]),.card [data-a=pnew]):not(#z_){border-radius:12px}
+html.lgx.lg15[data-glass=off] :is(#setp .card-list,.bk-card):not(#z_){background:var(--lg-tint-strong)}
+html.lgx.lg15 :is(#nav,#mini,#menu,#mb,#qp):not(#z_){box-shadow:inset 0 0 0 .5px var(--lg-hair),inset 0 1px 1px var(--lg-glow),inset 0 0 22px var(--lg-glow),var(--lg-shadow)}
+/* 3. Settings: the 1.5 color field (dark surface + his cover, blurred, at 42%), painted on the panel itself so it can't go see-through */
+html.lgx.lg15 #setp:not(#z_){background:linear-gradient(color-mix(in srgb,color-mix(in srgb,var(--md-surface) 55%,#000) 58%,transparent),color-mix(in srgb,color-mix(in srgb,var(--md-surface) 55%,#000) 58%,transparent)),
+  var(--lg-cover-soft,none) center/150% 150% no-repeat,color-mix(in srgb,var(--md-surface) 55%,#000)}
+html.lgx.lg15.light #setp:not(#z_){background:linear-gradient(color-mix(in srgb,var(--md-surface) 58%,transparent),color-mix(in srgb,var(--md-surface) 58%,transparent)),
+  var(--lg-cover-soft,none) center/150% 150% no-repeat,var(--md-surface)}
+html.lgx.lg15.lg-wall #setp:not(#z_){background:linear-gradient(180deg,rgba(0,0,0,.40),rgba(0,0,0,.56)),var(--lg-wall) center/cover no-repeat,#141418}
+html.lgx.lg15.lg-wall.light #setp:not(#z_){background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.62)),var(--lg-wall) center/cover no-repeat,#f2f2f7}
+/* 4. floating bars: 1.5 tint; on Android the list already ends above them (1.6 fix), a modest floor keeps text crisp on any wallpaper */
+html.lgx.lg15.lg-android:not([data-glass=off]) :is(#nav,#mini):not(#z_){background:rgba(30,30,36,.40)}
+html.lgx.lg15.lg-android.light:not([data-glass=off]) :is(#nav,#mini):not(#z_){background:rgba(255,255,255,.52)}
+html.lgx.lg15.no-svg-bf:not([data-glass=off]) :is(#nav,#mini):not(#z_){background:rgba(26,26,32,.80)}
+/* 5. sheets, menus, queue: 1.5 frosted glass where blur works, with a solid floor so nothing behind can ever read through */
+html.lgx.lg15:not([data-glass=off]) :is(#menu,#mb,#qp):not(#z_):not(#z2_):not(#z3_){background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02) 45%,rgba(255,255,255,.04)),rgba(24,24,30,.94);
+  -webkit-backdrop-filter:blur(24px) saturate(1.9);backdrop-filter:blur(24px) saturate(1.9)}
+html.lgx.lg15.light:not([data-glass=off]) :is(#menu,#mb,#qp):not(#z_):not(#z2_):not(#z3_){background:linear-gradient(160deg,rgba(255,255,255,.5),rgba(255,255,255,.2)),rgba(246,246,249,.95)}
+/* 6. 1.5 radii: cards 26, sheets 32, list art 9, grid art 12 */
+html.lgx.lg15 :is(#mb,#menu){border-radius:32px}
+html.lgx.lg15 .row img{border-radius:9px}
+html.lgx.lg15 .card img{border-radius:12px}
+/* 7. gentle press feedback (kept from 1.5.2, no visual change at rest) */
+html.lgx.lg15 :is(.btn,.chip,.tacts .ib,.bt .ib,.bb .ib,.tr>.ib,#mini .ib,.seg button,.card,.row){transition:transform .18s var(--lg-ease),filter .18s,background-color .2s}
+html.lgx.lg15 :is(.btn,.chip,.tacts .ib,.bt .ib,.bb .ib,.tr>.ib,#mini .ib,.seg button):active{transform:scale(.95);filter:brightness(1.12)}
+html.lgx.lg15 .card:active{transform:scale(.98)}
+html.lgx.lg15 .lbar .btn:not(#z_):not(#z2_){height:48px;border-radius:14px;font-size:16px;font-weight:650;color:var(--lg-acc);gap:8px;padding:0 18px;
+  background:var(--lg-tint);box-shadow:inset 0 0 0 .5px var(--lg-hair),inset 0 1px 1px var(--lg-glow),inset 0 0 18px var(--lg-glow)}
+html.lgx.lg15.light .lbar .btn:not(#z_):not(#z2_){color:color-mix(in srgb,var(--lg-acc) 85%,#000)}
+/* 5b. sheets: the frosted 1.5 color comes from a pre-blurred copy of the cover painted inside the sheet (opaque, no backdrop needed) */
+html.lgx.lg15:not([data-glass=off]) :is(#menu,#mb,#qp):not(#z_):not(#z2_):not(#z3_){background:
+  linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02) 45%,rgba(255,255,255,.05)),
+  linear-gradient(rgba(22,22,28,.80),rgba(22,22,28,.80)),var(--lg-cover-soft,none) center/cover no-repeat,#16161c}
+html.lgx.lg15.light:not([data-glass=off]) :is(#menu,#mb,#qp):not(#z_):not(#z2_):not(#z3_){background:
+  linear-gradient(160deg,rgba(255,255,255,.5),rgba(255,255,255,.2)),linear-gradient(rgba(246,246,249,.80),rgba(246,246,249,.80)),var(--lg-cover-soft,none) center/cover no-repeat,#f6f6f9}
