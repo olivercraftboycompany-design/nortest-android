@@ -169,7 +169,7 @@
 
   /* ---------- header button + "last backup" nudge ---------- */
   const settingsBtn = document.querySelector('header.top [data-a=settings]');
-  if (settingsBtn) settingsBtn.insertAdjacentHTML('afterend', '<button class="btn" data-a="backup" id="bkBtn" title="Back up or restore your songs">Backup</button>');
+  if (settingsBtn) settingsBtn.insertAdjacentHTML('beforebegin', `<button class="ib" data-a="backup" id="bkBtn" aria-label="Backup" title="Back up or restore your songs">${typeof mi === 'function' ? mi('backup') : 'Backup'}</button>`);
   let lastBackup = 0;
   const nudge = () => {
     const due = own().length > 0 && (!lastBackup || Date.now() - lastBackup > 14 * DAY);
@@ -499,14 +499,11 @@
     }
   });
 
-  /* a shortcut card at the top of Settings too */
-  const _settingsBk = settings;
-  settings = async function () {
-    await _settingsBk.apply(this, arguments);
-    const h = document.querySelector('#mb h3');
-    if (h) h.insertAdjacentHTML('afterend', `<div class="bk-card" style="display:flex;align-items:center;gap:12px;margin-top:0"><div style="flex:1"><h4 style="margin:0">💾 Backup &amp; restore</h4><p>Last backup: <b>${ago(lastBackup)}</b></p></div><button class="btn pri" data-a="backup">Open</button></div>`);
+  /* "last backup" line inside Settings > Backup & restore */
+  window.onSettingsRendered = p => {
+    const slot = p.querySelector('.bk-slot');
+    if (slot) slot.innerHTML = `<div class="li"><div class="lt"><b>Last backup</b><span>${ago(lastBackup)}</span></div></div>`;
   };
-  A.settings = settings;
 
   /* deep link: ?backup opens the panel (used by the app shortcut) */
   if (/[?&]backup\b/.test(location.search) || location.hash === '#backup') setTimeout(panel, 600);

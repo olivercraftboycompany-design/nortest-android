@@ -316,6 +316,10 @@ class MainActivity : ComponentActivity() {
         } catch (_: Throwable) { }
     }
 
+    fun checkForUpdatesFromPage() = runOnUiThread {
+        try { updater?.checkNow() } catch (_: Throwable) { }
+    }
+
     private fun installedVersionCode(): Long {
         val info = packageManager.getPackageInfo(packageName, 0)
         @Suppress("DEPRECATION")

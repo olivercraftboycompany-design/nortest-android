@@ -97,12 +97,15 @@ icon and tap **Check for updates**. Your songs stay; every release is signed wit
   page running and at full priority while the screen is off, holds a wake lock while
   music plays, and never pauses the page when you leave the app.
 
-## Look (1.3)
+## Look (1.4): Material 3 Expressive
 
-`www/glass.css` + `www/glass.js` give the Liquid Glass look (shared with the website): floating glass
-tab bar and mini player on phones, album-art tinted background, frosted panels, springy animations.
-They only change looks; if blur makes scrolling lag, `glass.js` switches to solid tinted glass for
-that session (`body.ng-lite`).
+The web UI (`www/`) was rewritten in Material 3 Expressive and is shared with the website:
+`style.css` (all styles, no injected style blocks), `m3.js` (Material Symbols icons, M3 color roles built
+from the playing cover in OKLCH, expressive shapes as morphable clip-path polygons, ripple),
+`fonts.css` (Google Sans Flex, bundled so it works offline). Settings is a full-screen page (`settings()`
+in app.js); crossfade uses a second, hidden audio element for the old song's tail, so Media Session,
+the remote and the queue always follow `au`. `NortestBridge.checkForUpdates()` backs
+Settings > About > Check for updates. `www/glass.*` from the 1.3 draft are unused.
 
 ## Building
 

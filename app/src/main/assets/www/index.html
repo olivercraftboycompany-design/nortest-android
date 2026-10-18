@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>nortest</title>
-<meta name="theme-color" content="#05060a">
+<meta name="theme-color" content="#121316">
 <meta name="description" content="nortest music player">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -14,31 +14,33 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="nortest">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="glass.css">
 </head>
 <body>
-<div class="bg"><i></i><i></i><i></i></div>
+<div class="bg"></div>
 
 <div id="app">
-  <aside class="glass side">
-    <h1>nortest</h1>
-    <nav id="nav"></nav>
+  <aside class="side">
+    <h1 class="brand">nortest</h1>
+    <nav id="nav" aria-label="Sections"></nav>
   </aside>
   <section class="main">
-    <header class="glass top">
-      <input id="search" type="search" placeholder="Search songs, artists, albums">
-      <button class="btn" data-a="upload">Upload songs</button>
-      <button class="btn" data-a="fs">Full screen</button>
-      <button class="btn" data-a="settings">Settings</button>
-      <button class="btn pri hid" id="installBtn" type="button">Install app</button>
+    <header class="top">
+      <label class="sbar"><span class="sic" data-i="search"></span><input id="search" type="search" placeholder="Search your music" autocomplete="off"></label>
+      <div class="tacts">
+        <button class="ib" data-a="fs" aria-label="Full screen" title="Full screen"><span data-i="fullscreen"></span></button>
+        <button class="ib" data-a="settings" aria-label="Settings" title="Settings"><span data-i="settings"></span></button>
+        <button class="btn pri hid" id="installBtn" type="button">Install app</button>
+      </div>
     </header>
     <main id="view"></main>
   </section>
 </div>
 
-<div id="mini" class="glass">
-  <div id="mProg"><i></i></div>
+<button class="fab" data-a="upload" aria-label="Upload songs"><span data-i="upload"></span><span>Upload</span></button>
+
+<div id="mini">
   <img id="mArt" data-a="open" alt="">
   <div class="mi" data-a="open">
     <b id="mT">Nothing playing</b>
@@ -47,18 +49,19 @@
   </div>
   <div class="mc">
     <button class="ib" data-a="prev" id="mp" aria-label="Previous"></button>
-    <button class="ib" data-a="toggle" id="mpl" aria-label="Play or pause"></button>
+    <button class="ib mplay" data-a="toggle" id="mpl" aria-label="Play or pause"></button>
     <button class="ib" data-a="next" id="mn" aria-label="Next"></button>
   </div>
+  <div id="mProg"><i></i></div>
 </div>
 
-<div id="big">
+<div id="big" class="paused">
   <div class="bbg"></div>
-  <div class="bw glass">
+  <div class="bw">
     <div class="bt hl">
-      <button class="btn" data-a="close">Close</button>
-      <em class="out"></em>
-      <button class="btn" data-a="side">Sideways mode</button>
+      <button class="ib" data-a="close" aria-label="Close"><span data-i="keyboard_arrow_down"></span></button>
+      <div class="btt"><small>Now playing</small><em class="out"></em></div>
+      <button class="ib" data-a="side" aria-label="Sideways mode" title="Sideways mode"><span data-i="screen_rotation"></span></button>
     </div>
     <div class="bm">
       <div class="artw"><img id="bArt" alt=""></div>
@@ -68,35 +71,44 @@
           <button class="ib hrt hl" data-a="fav" id="bH" aria-label="Favorite"></button>
         </div>
         <div class="hl">
-          <div class="pr"><span id="cur">0:00</span><input id="seek" type="range" min="0" max="100" step="0.1" value="0"><span id="dur">0:00</span></div>
-          <div class="tr">
-            <button class="btn" data-a="b10">-10s</button>
-            <button class="ib" data-a="prev" id="bp" aria-label="Previous"></button>
-            <button class="ib big" data-a="toggle" id="bpl" aria-label="Play or pause"></button>
-            <button class="ib" data-a="next" id="bn" aria-label="Next"></button>
-            <button class="btn" data-a="f10">+10s</button>
+          <div class="pr">
+            <div class="sk"><div class="tk"></div><div class="wv"><i></i><b></b></div><div class="th"></div><input id="seek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Seek"></div>
+            <div class="tm"><span id="cur">0:00</span><span id="dur">0:00</span></div>
           </div>
-          <div class="vr"><span>Volume</span><input id="vol" type="range" min="0" max="1" step="0.01" value="1"></div>
+          <div class="tr">
+            <button class="ib" data-a="b10" aria-label="Back 10 seconds"><span data-i="replay_10"></span></button>
+            <div class="bgp">
+              <button class="gb" data-a="prev" id="bp" aria-label="Previous"></button>
+              <button class="gb play" data-a="toggle" id="bpl" aria-label="Play or pause"></button>
+              <button class="gb" data-a="next" id="bn" aria-label="Next"></button>
+            </div>
+            <button class="ib" data-a="f10" aria-label="Forward 10 seconds"><span data-i="forward_10"></span></button>
+          </div>
+          <div class="vr"><span data-i="volume_down"></span><input id="vol" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume"><span data-i="volume_up"></span></div>
           <div class="bb">
-            <button class="btn" data-a="shuf" id="bShuf">Shuffle</button>
-            <button class="btn" data-a="rep" id="bRep">Repeat: off</button>
-            <button class="btn" data-a="lyr">Lyrics</button>
-            <button class="btn" data-a="qp">Queue</button>
+            <button class="ib tg" data-a="shuf" id="bShuf" aria-label="Shuffle" title="Shuffle"><span data-i="shuffle"></span></button>
+            <button class="ib tg" data-a="rep" id="bRep" aria-label="Repeat" title="Repeat"><span data-i="repeat"></span></button>
+            <button class="ib tg" data-a="lyr" aria-label="Lyrics" title="Lyrics"><span data-i="lyrics"></span></button>
+            <button class="ib tg" data-a="qp" aria-label="Queue" title="Queue"><span data-i="queue_music"></span></button>
           </div>
         </div>
-        <div id="lyr"><button class="btn" data-a="lyrx">X</button><pre id="lt"></pre></div>
+        <div id="lyr"><button class="ib" data-a="lyrx" aria-label="Close lyrics"><span data-i="keyboard_arrow_down"></span></button><pre id="lt"></pre></div>
       </div>
     </div>
   </div>
-  <div id="qp" class="glass"></div>
+  <div id="qp" class="sheet"></div>
 </div>
 
-<div id="mod" class="hid"><div class="glass mb" id="mb"></div></div>
-<div id="menu" class="glass hid"></div>
+<div id="setp" class="hid" role="dialog" aria-label="Settings"></div>
+<div id="mod" class="hid"><div class="mb" id="mb"></div></div>
+<div id="scrim" class="hid"></div>
+<div id="menu" class="hid"></div>
 <input id="file" type="file" accept="audio/*" multiple hidden>
 <audio id="au" preload="metadata"></audio>
 
+
 <script src="jsmediatags.min.js"></script>
+<script src="m3.js"></script>
 <script src="app.js"></script>
   <script>
 /* Tab remote control */
@@ -114,7 +126,7 @@
     else if (c === 'play' || c === 'resume') start();
     else if (c === 'next' || c === 'skip') next();
     else if (c === 'prev' || c === 'back') prev();
-    else if (c.startsWith('vol ')) au.volume = Math.min(1, Math.max(0, +c.slice(4) / 100));
+    else if (c.startsWith('vol ')) { const v = Math.min(1, Math.max(0, +c.slice(4) / 100)); if (isFinite(v)) { S.vol = au.volume = v; save('S', S); const r = $('#vol'); r.value = v; r.style.setProperty('--p', v * 100 + '%'); } }
     else if (c.startsWith('play ')) {
       const q = c.slice(5);
       const s = songs.find(s => (s.title + ' ' + s.artist).toLowerCase().includes(q));
@@ -132,13 +144,21 @@
     else return;
     if (c !== 'now' && c !== 'status') setTimeout(() => { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing'; }, 300);
   };
-  let es, hiddenAt = 0;
+  let es, hiddenAt = 0, retry = 0, retryT = 0, lastMsg = 0;
   const connect = () => {
+    clearTimeout(retryT);
     try { es && es.close(); } catch {}
     es = new EventSource('https://ntfy.sh/' + TOPIC + '/sse');
+    es.onopen = () => { retry = 0; };
     es.onmessage = e => {
+      lastMsg = Date.now();
       let c; try { c = (JSON.parse(e.data).message || '').trim().toLowerCase(); } catch { return; }
       run(c);
+    };
+    /* the browser retries a dropped stream by itself, but gives up for good on an HTTP error: retry with backoff */
+    es.onerror = () => {
+      if (es.readyState !== 2) return;
+      retryT = setTimeout(connect, Math.min(60000, 2000 * 2 ** retry++));
     };
   };
   connect();
@@ -148,21 +168,12 @@
     if (!es || es.readyState !== 1 || Date.now() - hiddenAt > 20000) connect();
   });
   window.addEventListener('online', connect);
-  window.tabRemote = { run, status, connect };
+  const state = () => !es ? 'off' : es.readyState === 1 ? 'connected' : es.readyState === 0 ? 'connecting' : 'reconnecting';
+  window.tabRemote = { run, status, connect, state, topic: TOPIC, last: () => lastMsg };
 })();
 </script>
   <script>
 /* ---------- Playlist: search + multi-select add ---------- */
-const pSelStyle = document.createElement('style');
-pSelStyle.textContent = `
-.mlist.sel{max-height:50vh;overflow:auto;margin:12px 0}
-.row.sel .ck{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.35);display:grid;place-items:center;flex:none;color:transparent;transition:.15s}
-.row.sel.on .ck{background:var(--acc);border-color:var(--acc);color:#000}
-.row.sel.on{background:rgba(255,255,255,.08)}
-.row.sel.dis{opacity:.55;cursor:default}
-.btn:disabled{opacity:.4;pointer-events:none}
-`;
-document.head.appendChild(pSelStyle);
 
 let pSel = new Set();
 const CK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
@@ -224,14 +235,6 @@ document.addEventListener('input', e => {
   </script>
   <script>
 /* ---------- Synced lyrics (LRCLIB) ---------- */
-const lyrStyle = document.createElement('style');
-lyrStyle.textContent = `
-#lt.sy{padding:25vh 0}
-#lt .ll{display:block;padding:5px 0;opacity:.35;cursor:pointer;transform-origin:left center;transition:opacity .25s,transform .25s,color .25s}
-#lt .ll:hover{opacity:.7}
-#lt .ll.on{opacity:1;color:var(--acc);transform:scale(1.04)}
-`;
-document.head.appendChild(lyrStyle);
 
 const lyrTried = new Set();
 let lines = [], active = -1, holdUntil = 0;
@@ -344,15 +347,6 @@ document.addEventListener('click', e => {
    once = play this song one more time, then carry on */
 const REP = ['off', 'all', 'one', 'once'];
 let repOnceUsed = false;
-const repStyle = document.createElement('style');
-repStyle.textContent = `
-#bRep{display:inline-flex;align-items:center;gap:7px}
-#bRep .ri{position:relative;display:inline-grid;place-items:center;width:18px;height:18px}
-#bRep .ri svg{width:18px;height:18px}
-#bRep .rb{position:absolute;right:-7px;top:-6px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:#06100a;color:var(--acc);font-size:9px;font-weight:800;line-height:14px;text-align:center}
-#bRep:not(.pri) .rb{display:none}
-`;
-document.head.appendChild(repStyle);
 const REP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>';
 
 /* set a repeat mode by number or name ('off' | 'all' | 'one' | 'once') */
@@ -379,12 +373,13 @@ au.onended = () => {
 /* the Repeat button (and the R key) cycle through the modes */
 A.rep = () => setRep((S.rep + 1) % 4);
 
-/* button: icon + badge + label */
+/* button: repeat / repeat-one icon, "+1" badge for once, highlighted when on */
 const _modesRep = modes;
 modes = function () {
   _modesRep();
   const b = $('#bRep'), m = REP[S.rep] || 'off';
-  b.innerHTML = `<span class="ri">${REP_SVG}<span class="rb">${m === 'one' ? '1' : m === 'once' ? '+1' : ''}</span></span><span>Repeat ${m}</span>`;
+  b.innerHTML = mi(m === 'one' ? 'repeat_one' : 'repeat', m !== 'off') + (m === 'once' ? '<span class="rb">+1</span>' : '');
+  b.classList.toggle('on', m !== 'off');
   const nextM = REP[(S.rep + 1) % 4];
   b.title = `Repeat: ${m} (tap for ${nextM})`;
   b.setAttribute('aria-label', b.title);
@@ -394,18 +389,6 @@ modes();
   </script>
   <script>
 /* ---------- Custom background + expanded settings ---------- */
-const bgStyle = document.createElement('style');
-bgStyle.textContent = `
-.cbg,.cdim{position:absolute;inset:0;width:100%;height:100%}
-.cbg{background-size:cover;background-position:center;object-fit:cover;transform-origin:center}
-.bg.custom i{display:none}
-.glass,#view{border-radius:var(--rad,16px)}
-.sx{margin-top:22px;padding-top:6px;border-top:1px solid var(--bd)}
-.sx h4{font-size:15px;font-weight:800;margin:14px 0 4px}
-.sx .keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;color:var(--mu);font-size:13px;margin-top:10px}
-.sx .keys b{color:var(--tx);font-weight:600}
-`;
-document.head.appendChild(bgStyle);
 
 const bgDef = { mode: 'default', color: '#0b0d14', c1: '#1b2a6b', c2: '#5a1b6b', angle: 135, url: '', dim: 0.35, blur: 0, ftype: '', fname: '' };
 const lookDef = { glass: 0.06, rad: 16 };
@@ -424,6 +407,7 @@ bgRoot.prepend(bgLayer, bgVid, bgDim);
 function applyBG() {
   const b = bgGet(), l = lookGet(), m = b.mode;
   bgRoot.classList.toggle('custom', m !== 'default');
+  document.body.classList.toggle('cbg-on', m !== 'default');
 
   bgLayer.style.background = ''; bgLayer.style.backgroundImage = '';
   let media = null;
@@ -480,50 +464,29 @@ bgInput.onchange = async () => {
 /* ---------- Expanded settings ---------- */
 const bgVis = () => {
   const sel = $('#bgmode'); if (!sel) return;
-  document.querySelectorAll('#mb .bgr').forEach(r =>
+  document.querySelectorAll('#setp .bgr').forEach(r =>
     r.classList.toggle('hid', !(r.dataset.for === sel.value || (r.dataset.for === 'any' && sel.value !== 'default'))));
 };
 
+/* the Background group of the Settings page (app.js settings() includes it) */
 const extraSettings = () => {
-  const b = bgGet(), l = lookGet();
-  const modes = [['default', 'Default glow'], ['color', 'Solid color'], ['gradient', 'Gradient'], ['file', 'Image / GIF / video from device'], ['url', 'Image / video from link'], ['art', 'Current album art']];
+  const b = bgGet();
+  const modes = [['default', 'Default (color from your music)'], ['color', 'Solid color'], ['gradient', 'Gradient'], ['file', 'Image / GIF / video from device'], ['url', 'Image / video from link'], ['art', 'Current album art']];
   return `
-<div class="sx"><h4>Background</h4>
-  <label>Type<select id="bgmode" data-bg="mode">${modes.map(([v, t]) => `<option value="${v}" ${b.mode === v ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
-  <div class="bgr" data-for="color"><label>Color<input type="color" data-bg="color" value="${b.color}"></label></div>
-  <div class="bgr" data-for="gradient">
-    <label>From<input type="color" data-bg="c1" value="${b.c1}"></label>
-    <label>To<input type="color" data-bg="c2" value="${b.c2}"></label>
-    <label>Angle<input type="range" data-bg="angle" min="0" max="360" step="1" value="${b.angle}"></label>
-  </div>
-  <div class="bgr" data-for="file"><div style="display:flex;gap:12px;align-items:center;margin:14px 0">
-    <button class="btn" data-a="bgpick">Choose file</button><span id="bgname" style="color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.fname) || 'No file chosen'}</span></div></div>
-  <div class="bgr" data-for="url"><label>Link (image, GIF or mp4/webm)<input type="url" data-bg="url" placeholder="https://..." value="${esc(b.url)}"></label></div>
-  <div class="bgr" data-for="any">
-    <label>Dim<input type="range" data-bg="dim" min="0" max="0.9" step="0.01" value="${b.dim}"></label>
-    <label>Blur<input type="range" data-bg="blur" min="0" max="40" step="1" value="${b.blur}"></label>
-  </div>
+<div class="li"><div class="lt"><b>Background</b><span>Behind the whole app</span></div><select id="bgmode" data-bg="mode">${modes.map(([v, t]) => `<option value="${v}" ${b.mode === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+<div class="bgr li" data-for="color"><div class="lt"><b>Color</b></div><input type="color" data-bg="color" value="${b.color}"></div>
+<div class="bgr" data-for="gradient">
+  <div class="li"><div class="lt"><b>From</b></div><input type="color" data-bg="c1" value="${b.c1}"></div>
+  <div class="li"><div class="lt"><b>To</b></div><input type="color" data-bg="c2" value="${b.c2}"></div>
+  <div class="li col"><div class="lt"><b>Angle</b></div><input type="range" data-bg="angle" min="0" max="360" step="1" value="${b.angle}"></div>
 </div>
-<div class="sx"><h4>Appearance</h4>
-  <label>Glass opacity<input type="range" data-look="glass" min="0" max="0.4" step="0.01" value="${l.glass}"></label>
-  <label>Corner roundness<input type="range" data-look="rad" min="0" max="32" step="1" value="${l.rad}"></label>
-  <button class="btn" data-a="bgreset">Reset appearance</button>
-</div>
-<div class="sx"><h4>Keyboard shortcuts</h4><div class="keys">
-  <b>Space</b><span>Play / pause</span><b>Left / Right</b><span>Back / forward 10s</span>
-  <b>N / P</b><span>Next / previous</span><b>S / R</b><span>Shuffle / repeat</span>
-  <b>L</b><span>Lyrics</span><b>F</b><span>Favorite</span><b>M</b><span>Mute</span><b>Esc</b><span>Close panels</span></div>
+<div class="bgr li" data-for="file"><div class="lt"><b>File</b><span id="bgname">${esc(b.fname) || 'No file chosen'}</span></div><button class="btn tonal" data-a="bgpick">Choose</button></div>
+<div class="bgr li col" data-for="url"><div class="lt"><b>Link</b><span>Image, GIF or mp4/webm</span></div><input type="url" data-bg="url" placeholder="https://..." value="${esc(b.url)}"></div>
+<div class="bgr" data-for="any">
+  <div class="li col"><div class="lt"><b>Dim</b></div><input type="range" data-bg="dim" min="0" max="0.9" step="0.01" value="${b.dim}"></div>
+  <div class="li col"><div class="lt"><b>Blur</b></div><input type="range" data-bg="blur" min="0" max="40" step="1" value="${b.blur}"></div>
 </div>`;
 };
-
-const _settingsBg = settings;
-settings = async function () {
-  await _settingsBg.apply(this, arguments);
-  const row = document.querySelector('#mb .mrow');
-  if (row) row.insertAdjacentHTML('beforebegin', extraSettings());
-  bgVis();
-};
-A.settings = settings;
 
 /* controls */
 const bgNum = ['angle', 'dim', 'blur'];
@@ -546,8 +509,8 @@ document.addEventListener('change', bgHandle);
 Object.assign(A, {
   bgpick: () => bgInput.click(),
   bgreset: async () => {
-    if (!confirm('Reset appearance and remove the custom background?')) return;
-    delete S.bg; delete S.look; S.accent = '#1ed760'; S.blur = 24;
+    if (!confirm('Reset theme, colors and background to the defaults?')) return;
+    delete S.bg; delete S.look; S.accent = '#1ed760'; S.blur = 24; S.theme = 'system'; S.dyn = true;
     await del('meta', 'bgFile'); bgFileUrl = '';
     save('S', S); applyUI(); settings();
   }
@@ -568,9 +531,9 @@ applyBG();
 
   const st = document.createElement('style');
   st.textContent = `
-#iosTip{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);z-index:999;width:min(92vw,340px);padding:14px 44px 14px 16px;font-size:14px;line-height:1.45;background:rgba(20,22,30,.92)}
-#iosTip b{color:var(--acc)}
-#iosTip button{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:var(--tx);cursor:pointer;font:inherit}
+#iosTip{position:fixed;left:50%;bottom:170px;transform:translateX(-50%);z-index:999;width:min(92vw,340px);padding:14px 44px 14px 16px;font-size:14px;line-height:1.45;border-radius:16px;background:var(--md-inverse-surface);color:var(--md-inverse-on-surface)}
+#iosTip b{color:var(--md-inverse-primary)}
+#iosTip button{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:inherit;cursor:pointer;font:inherit}
 @media (max-width:700px){#installBtn{padding:9px 12px}}`;
   document.head.appendChild(st);
 
@@ -581,7 +544,7 @@ applyBG();
   const tip = () => {
     if (document.getElementById('iosTip')) return;
     const d = document.createElement('div');
-    d.id = 'iosTip'; d.className = 'glass';
+    d.id = 'iosTip';
     d.innerHTML = 'To install: tap <b>Share</b> <span aria-hidden="true">&#x2191;&#xFE0E;</span> in Safari, then <b>Add to Home Screen</b>.<button type="button" aria-label="Close">&times;</button>';
     d.querySelector('button').onclick = () => d.remove();
     document.body.appendChild(d);
@@ -596,6 +559,5 @@ applyBG();
 })();
   </script>
 <script src="nortest-android.js"></script>
-<script src="glass.js"></script>
 </body>
 </html>

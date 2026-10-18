@@ -30,6 +30,10 @@ class NortestBridge(private val activity: MainActivity) {
     @JavascriptInterface
     fun appVersion(): String = BuildConfigCompat.versionName(activity)
 
+    /** Settings > About > "Check for updates": same as the icon shortcut, always answers. */
+    @JavascriptInterface
+    fun checkForUpdates() = activity.checkForUpdatesFromPage()
+
     @JavascriptInterface
     fun setMetadata(title: String?, artist: String?, album: String?, durationMs: Double) {
         PlayerHub.updateTrack(
