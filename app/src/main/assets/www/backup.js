@@ -194,17 +194,17 @@
     const pc = quota ? Math.min(100, used / quota * 100) : 0;
     const canShare = !!(navigator.canShare && B.file && navigator.canShare({ files: [new File([], 'x.zip', { type: 'application/zip' })] }));
     const persHTML = pers === true
-      ? '<p class="bk-ok">🔒 Protected: Chrome won\'t auto-delete your songs.</p>'
+      ? '<p class="bk-ok">Protected: Chrome won\'t auto-delete your songs.</p>'
       : pers === false
-        ? '<p class="bk-warn">⚠️ Not protected yet. If your phone runs low on space, Chrome could clear your songs. Installing the app usually fixes this.</p><div class="bk-row"><button class="btn" data-a="bkpersist">Protect my songs</button></div>'
+        ? '<p class="bk-warn">Not protected yet. If your phone runs low on space, Chrome could clear your songs. Installing the app usually fixes this.</p><div class="bk-row"><button class="btn" data-a="bkpersist">Protect my songs</button></div>'
         : '<p>This browser can\'t lock storage, so keep a backup.</p>';
     const lastHTML = own().length
-      ? `<p>Last backup: <b>${ago(lastBackup)}</b>${(!lastBackup || Date.now() - lastBackup > 14 * DAY) ? ' · good time for a fresh one' : ''}</p>` : '';
+      ? `<p>Last backup: <b>${ago(lastBackup)}</b>${(!lastBackup || Date.now() - lastBackup > 14 * DAY) ? ' \u00b7 good time for a fresh one' : ''}</p>` : '';
 
     const r = B.rInfo;
     const restoreHTML = r
       ? `<p>Backup from <b>${esc(new Date(r.created).toLocaleString())}</b></p>
-         <p><b>${r.songs}</b> songs (${r.withAudio} with audio) · <b>${r.playlists}</b> playlists · ${r.favs} favourites · ${MB(r.size)}</p>
+         <p><b>${r.songs}</b> songs (${r.withAudio} with audio) \u00b7 <b>${r.playlists}</b> playlists \u00b7 ${r.favs} favourites \u00b7 ${MB(r.size)}</p>
          ${r.withAudio < r.songs ? `<p class="bk-warn">${r.songs - r.withAudio} songs in this file have no audio (library-only backup). They only come back if the same song is already on this phone.</p>` : ''}
          <label class="chk bk-opt" style="padding:8px 12px"><input type="checkbox" id="bkRS" ${B.rSettings ? 'checked' : ''}><span>Also restore settings, EQ &amp; background</span></label>
          <div class="bk-row"><button class="btn" data-a="bkrcancel" ${B.busy ? 'disabled' : ''}>Cancel</button><button class="btn pri" data-a="bkrgo" ${B.busy ? 'disabled' : ''}>Restore now</button></div>`
@@ -216,21 +216,21 @@
   <div class="bk-bar"><i id="bkProg" style="width:${B.prog}%"></i></div>
   <p id="bkMsg" class="${B.msgCls}">${esc(B.msg)}</p>
 </div>
-<div class="bk-card"><h4>💾 Storage</h4>
-  <p><b>${own().length}</b> songs · <b>${pls.length}</b> playlists · audio ${MB(audio)}</p>
+<div class="bk-card"><h4>Storage</h4>
+  <p><b>${own().length}</b> songs \u00b7 <b>${pls.length}</b> playlists \u00b7 audio ${MB(audio)}</p>
   ${est ? `<div class="bk-bar"><i style="width:${Math.max(pc, used ? 1 : 0)}%"></i></div><p>Using <b>${MB(used)}</b> of ${MB(quota)} available to nortest</p>` : ''}
   ${persHTML}
 </div>
-<div class="bk-card"><h4>⬆️ Back up</h4>
+<div class="bk-card"><h4>Back up</h4>
   ${lastHTML}
-  <label class="bk-opt"><input type="radio" name="bkmode" value="all" ${B.mode === 'all' ? 'checked' : ''}><div><span>Everything</span><small>Song files + playlists, favourites, play counts and settings · about ${MB(audio + covers + 50e3)}</small></div></label>
-  <label class="bk-opt"><input type="radio" name="bkmode" value="lib" ${B.mode === 'lib' ? 'checked' : ''}><div><span>Library only (no audio)</span><small>Playlists, favourites, play counts and settings · tiny file</small></div></label>
-  <div class="bk-row"><button class="btn pri" data-a="bkmake" ${B.busy ? 'disabled' : ''}>${B.busy ? 'Working…' : 'Create backup'}</button></div>
-  ${B.file ? `<p class="bk-ok">✅ Backup ready: <b>${esc(B.fileName)}</b> · ${MB(B.file.size)}</p>
-  <div class="bk-row"><button class="btn pri" data-a="bksave">Save to phone</button>${canShare ? '<button class="btn" data-a="bkshare">Share…</button>' : ''}</div>
+  <label class="bk-opt"><input type="radio" name="bkmode" value="all" ${B.mode === 'all' ? 'checked' : ''}><div><span>Everything</span><small>Song files + playlists, favourites, play counts and settings \u00b7 about ${MB(audio + covers + 50e3)}</small></div></label>
+  <label class="bk-opt"><input type="radio" name="bkmode" value="lib" ${B.mode === 'lib' ? 'checked' : ''}><div><span>Library only (no audio)</span><small>Playlists, favourites, play counts and settings \u00b7 tiny file</small></div></label>
+  <div class="bk-row"><button class="btn pri" data-a="bkmake" ${B.busy ? 'disabled' : ''}>${B.busy ? 'Working\u2026' : 'Create backup'}</button></div>
+  ${B.file ? `<p class="bk-ok">Backup ready: <b>${esc(B.fileName)}</b> \u00b7 ${MB(B.file.size)}</p>
+  <div class="bk-row"><button class="btn pri" data-a="bksave">Save to phone</button>${canShare ? '<button class="btn" data-a="bkshare">Share\u2026</button>' : ''}</div>
   <p>Save it somewhere safe: Google Drive, a PC, or a USB drive. "Save to phone" puts it in Downloads.</p>` : ''}
 </div>
-<div class="bk-card"><h4>⬇️ Restore</h4>${restoreHTML}</div>
+<div class="bk-card"><h4>Restore</h4>${restoreHTML}</div>
 <div class="mrow"><button class="btn pri" data-a="mx">Done</button></div>`);
   }
   const panelOpen = () => !$('#mod').classList.contains('hid') && !!$('#bkProgCard');
@@ -279,15 +279,15 @@
 
       const total = entries.reduce((n, e) => n + e.blob.size, 0) || 1;
       let done = 0;
-      progress(0, `Packing ${list.length} songs… 0 of ${MB(total)}`);
+      progress(0, `Packing ${list.length} songs\u2026 0 of ${MB(total)}`);
       const zip = await makeZip(entries, n => {
         done += n;
-        progress(done / total * 100, `Packing ${list.length} songs… ${MB(done)} of ${MB(total)}`);
+        progress(done / total * 100, `Packing ${list.length} songs\u2026 ${MB(done)} of ${MB(total)}`);
       });
       const d = new Date(), pad = n => String(n).padStart(2, '0');
       B.fileName = `nortest-backup-${full ? '' : 'library-'}${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.zip`;
       B.file = zip; B.fileUrl = URL.createObjectURL(zip);
-      progress(100, `Backup ready · ${MB(zip.size)}. Tap "Save to phone" to keep it.`, 'bk-ok');
+      progress(100, `Backup ready \u00b7 ${MB(zip.size)}. Tap "Save to phone" to keep it.`, 'bk-ok');
     } catch (e) {
       console.warn('backup failed', e);
       progress(B.prog, e && e.message === 'TOO_BIG'
@@ -317,7 +317,7 @@
       if (!navigator.canShare || !navigator.canShare({ files: [f] })) throw new Error('nope');
       await navigator.share({ files: [f], title: 'nortest backup' });
       markBackedUp();
-      progress(100, 'Shared ✔ Make sure it landed somewhere safe (like Google Drive).', 'bk-ok');
+      progress(100, 'Shared. Make sure it landed somewhere safe (like Google Drive).', 'bk-ok');
       setTimeout(refresh, 300);
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -333,7 +333,7 @@
     if (!f) return;
     B.msg = ''; B.prog = 0;
     try {
-      progress(0, 'Reading backup…');
+      progress(0, 'Reading backup\u2026');
       const z = await readZip(f);
       const mb = await z.get('nortest-backup.json', 'application/json');
       if (!mb) throw new Error('NOT_NORTEST');
@@ -376,7 +376,7 @@
       let done = 0, i = 0;
       for (const r of m.songs) {
         i++;
-        progress(done / total * 95, `Restoring song ${i} of ${m.songs.length}…`);
+        progress(done / total * 95, `Restoring song ${i} of ${m.songs.length}\u2026`);
         const hit = keys(r).map(k => byKey.get(k)).find(Boolean);
         if (hit) {
           idMap[r.id] = hit.id;
@@ -408,7 +408,7 @@
       const mapIds = ids => (ids || []).map(id => idMap[id]).filter(Boolean);
 
       /* playlists: same playlist (or same name) = merge the songs in; otherwise add it */
-      progress(96, 'Restoring playlists…');
+      progress(96, 'Restoring playlists\u2026');
       const curPls = await all('playlists');
       for (const p of m.playlists || []) {
         const ids = mapIds(p.songs);
@@ -456,12 +456,12 @@
       applyUI(); render(); ui();
       autoPersist();
       const msg = [
-        `Restored ✔ ${res.added} song${res.added === 1 ? '' : 's'} added`,
+        `Restored: ${res.added} song${res.added === 1 ? '' : 's'} added`,
         res.matched ? `${res.matched} already here` : '',
         res.pls ? `${res.pls} playlist${res.pls === 1 ? '' : 's'} added` : '',
         res.plsMerged ? `${res.plsMerged} playlist${res.plsMerged === 1 ? '' : 's'} merged` : '',
         res.skipped ? `${res.skipped} skipped (no audio in this backup)` : ''
-      ].filter(Boolean).join(' · ');
+      ].filter(Boolean).join(' \u00b7 ');
       B.rFile = B.rInfo = null;
       progress(100, msg, 'bk-ok');
       window.nortestLastRestore = res;
@@ -493,7 +493,7 @@
     bkrgo: () => restore(),
     bkpersist: async () => {
       const ok = await askPersist();
-      B.msg = ok ? '🔒 Done: Chrome will keep your songs.' : 'Chrome said not yet. Installing the app (⋮ → Install app) and using it a bit usually unlocks this.';
+      B.msg = ok ? 'Done: Chrome will keep your songs.' : 'Chrome said not yet. Installing the app (\u22ee \u2192 Install app) and using it a bit usually unlocks this.';
       B.msgCls = ok ? 'bk-ok' : 'bk-warn';
       panel();
     }
