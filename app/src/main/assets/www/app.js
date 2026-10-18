@@ -395,10 +395,11 @@ async function settings() {
   <div class="li col"><div class="lt"><b>Theme</b></div>${seg('theme', S.theme || 'system', [['system', 'System'], ['light', 'Light'], ['dark', 'Dark'], ['amoled', 'Black']])}</div>
   <div class="li"><div class="lt"><b>Dynamic color</b><span>Colors come from the cover of the song that's playing</span></div>${sw('dyn', S.dyn !== false)}</div>
   <div class="li col"><div class="lt"><b>${S.dyn !== false ? 'Fallback color' : 'App color'}</b><span>${S.dyn !== false ? 'For songs without a cover' : 'The palette is built from this'}</span></div><div class="sws">${['#1ed760', '#4f7cff', '#b06cff', '#ff5d8f', '#ff8a3d', '#18b7c9'].map(c => `<button class="swc ${S.accent.toLowerCase() === c ? 'on' : ''}" data-a="swatch" data-c="${c}" style="background:${c}" aria-label="Color ${c}">${S.accent.toLowerCase() === c ? mi('check') : ''}</button>`).join('')}<input type="color" data-s="accent" value="${S.accent}" aria-label="Custom color"></div></div>
-  <div class="li col"><div class="lt"><b>Album art shape</b><span>In the player</span></div>${seg('artShape', S.artShape || 'cookie', [['cookie', 'Cookie'], ['circle', 'Circle'], ['rounded', 'Rounded']])}</div>
+  <div class="li col"><div class="lt"><b>Album art shape</b><span>In the player</span></div>${seg('artShape', S.artShape || (document.documentElement.classList.contains('lgx') ? 'rounded' : 'cookie'), [['cookie', 'Cookie'], ['circle', 'Circle'], ['rounded', 'Rounded']])}</div>
   <div class="li col"><div class="lt"><b>Player background</b></div>${seg('npbg', S.npbg || 'art', [['art', 'Blurred art'], ['tonal', 'Tonal'], ['solid', 'Solid']])}</div>
   <div class="li col"><div class="lt"><b>Grid columns</b><span>Albums, artists, playlists</span></div>${seg('cols', S.cols === 3 ? 3 : 2, [[2, '2'], [3, '3']])}</div>
   <div class="li col"><div class="lt"><b>Text size</b><span data-out="ts">${Math.round((S.ts || 1) * 100)}%</span></div><input type="range" data-n="ts" min="0.85" max="1.3" step="0.05" value="${S.ts || 1}"></div>
+  ${typeof glassRow === 'function' ? glassRow() : ''}
   <div class="li"><div class="lt"><b>Reduce motion</b><span>No bounces, waves or spinning</span></div>${sw('rmotion', !!S.rmotion)}</div>
   ${typeof extraSettings === 'function' ? extraSettings() : ''}
   <div class="li"><div class="lt"><b>Mini player</b><span>Show the bar above the tabs</span></div>${sw('showMini', !S.hideMini)}</div>

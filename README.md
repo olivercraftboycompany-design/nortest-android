@@ -97,6 +97,14 @@ icon and tap **Check for updates**. Your songs stay; every release is signed wit
   page running and at full priority while the screen is off, holds a wake lock while
   music plays, and never pauses the page when you leave the app.
 
+## Look (1.5): Liquid Glass
+
+1.5 keeps 1.4's code and settings and swaps the skin for Apple-style Liquid Glass:
+`glass.css` (the glass look, loaded after `style.css`), `glass.js` (the refraction engine: one SVG
+feDisplacementMap lens filter per floating surface, generated for its size and corner radius, used as
+`backdrop-filter:url()` in Chromium/WebView with a blur fallback; glass droplet tab indicator; press wobble;
+Settings > Look > Glass effects Full/Light/Off) and `sf.js` (SF-style line icons used by `mi()` in `m3.js`).
+
 ## Look (1.4): Material 3 Expressive
 
 The web UI (`www/`) was rewritten in Material 3 Expressive and is shared with the website:

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="lgx">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="glass.css">
 </head>
 <body>
 <div class="bg"></div>
@@ -30,6 +31,7 @@
       <label class="sbar"><span class="sic" data-i="search"></span><input id="search" type="search" placeholder="Search your music" autocomplete="off"></label>
       <div class="tacts">
         <button class="ib" data-a="fs" aria-label="Full screen" title="Full screen"><span data-i="fullscreen"></span></button>
+        <button class="ib lg-up" data-a="upload" aria-label="Upload songs" title="Upload songs"><span data-i="add"></span></button>
         <button class="ib" data-a="settings" aria-label="Settings" title="Settings"><span data-i="settings"></span></button>
         <button class="btn pri hid" id="installBtn" type="button">Install app</button>
       </div>
@@ -108,8 +110,10 @@
 
 
 <script src="jsmediatags.min.js"></script>
+<script src="sf.js"></script>
 <script src="m3.js"></script>
 <script src="app.js"></script>
+<script src="glass.js"></script>
   <script>
 /* Tab remote control */
 (() => {

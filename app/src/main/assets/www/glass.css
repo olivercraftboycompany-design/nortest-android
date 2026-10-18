@@ -1,151 +1,261 @@
-/* nortest 1.3 - Liquid Glass look. Loaded after style.css; only changes how things look.
-   Glass opacity, glass blur, corner roundness, accent color and custom backgrounds in Settings still apply. */
-@property --t1{syntax:'<color>';inherits:true;initial-value:#2b4bff}
-@property --t2{syntax:'<color>';inherits:true;initial-value:#8a2bff}
-@property --t3{syntax:'<color>';inherits:true;initial-value:#12c2a0}
-:root{
-  --t1:#2b4bff;--t2:#8a2bff;--t3:#12c2a0;
-  --tx:#fff;--mu:rgba(235,238,250,.68);
-  --bd:rgba(255,255,255,.14);
-  --tint:rgba(22,24,34,.38);              /* dark base under the glass, keeps white text readable */
-  --hi:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.06),inset 1px 0 0 rgba(255,255,255,.07),inset -1px 0 0 rgba(255,255,255,.07);
-  --sh:0 10px 34px rgba(0,0,0,.34);
-  --spring:cubic-bezier(.34,1.56,.64,1);
-  --ease:cubic-bezier(.2,.8,.2,1);
-  --R:calc(var(--rad,16px) * 1.5);
-  transition:--t1 1.2s ease,--t2 1.2s ease,--t3 1.2s ease;
+/* nortest 1.5 - Liquid Glass. Loaded after style.css; the 1.4 layout, settings and color engine stay, the skin changes.
+   Glass only on floating chrome (tab bar, mini player, player controls, sheets, chips, settings cards, dialogs).
+   Content (art, lists, grids) stays crisp. glass.js adds the refraction filter (--lg-url) per surface. */
+html.lgx{
+  --font:'Inter',-apple-system,'SF Pro Text','SF Pro Display',system-ui,'Segoe UI',Roboto,sans-serif;
+  --lg-tint:rgba(30,30,36,.26);--lg-tint-strong:rgba(22,22,28,.52);--lg-fg:#fff;--lg-fg2:rgba(235,235,245,.62);--lg-fg3:rgba(235,235,245,.34);
+  --lg-hair:rgba(255,255,255,.10);--lg-rim-a:rgba(255,255,255,.62);--lg-rim-b:rgba(255,255,255,.07);--lg-rim-c:rgba(255,255,255,.26);
+  --lg-glow:rgba(255,255,255,.06);--lg-shadow:0 10px 30px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.18);
+  --lg-blur:14px;--lg-sat:1.9;--lg-acc:var(--md-primary);
+  --lg-ease:cubic-bezier(.32,.72,0,1);
+  --nav-h:64px;--mini-h:60px;
 }
-html body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",system-ui,Roboto,"Segoe UI",Inter,sans-serif;background:#05060a;letter-spacing:-.01em}
-
-/* ---------- dynamic background: colors come from the playing song's album art ---------- */
-html .bg{background:#05060a}
-html .bg i{filter:none;opacity:.7;border-radius:50%;will-change:transform;animation:ngDrift 26s ease-in-out infinite alternate}
-html .bg i:nth-child(1),html .bg i:nth-child(2),html .bg i:nth-child(3){background:none}
-html .bg i:nth-last-child(3){width:120vmax;height:120vmax;top:-45vmax;left:-40vmax;background:radial-gradient(closest-side,var(--t1),transparent)}
-html .bg i:nth-last-child(2){width:110vmax;height:110vmax;bottom:-50vmax;right:-45vmax;top:auto;left:auto;background:radial-gradient(closest-side,var(--t2),transparent);animation-duration:32s;animation-delay:-9s}
-html .bg i:nth-last-child(1){width:80vmax;height:80vmax;top:30%;left:20%;opacity:.42;background:radial-gradient(closest-side,var(--t3),transparent);animation-duration:22s;animation-delay:-4s}
-html .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,10,.15),rgba(5,6,10,.45));pointer-events:none}
-html .bg.custom::after{display:none}
-@keyframes ngDrift{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(6vw,4vh,0) scale(1.08)}100%{transform:translate3d(-4vw,8vh,0) scale(.96)}}
-
-/* ---------- the glass material ---------- */
-html .glass,html #view,html .lg{
-  background:linear-gradient(135deg,rgba(255,255,255,calc(var(--glo,.06) + .06)) 0%,var(--gl) 45%,rgba(255,255,255,.02) 100%),var(--tint);
-  border:1px solid var(--bd);border-radius:var(--R);
-  box-shadow:var(--hi),var(--sh);
-  backdrop-filter:var(--bl);-webkit-backdrop-filter:var(--bl)}
-html #view{background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:0}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  html .glass,html .lg,html #nav{background:rgba(26,28,40,.94)!important}
+html.lgx.light{
+  --lg-tint:rgba(255,255,255,.34);--lg-tint-strong:rgba(250,250,252,.66);--lg-fg:#0b0b0f;--lg-fg2:rgba(60,60,67,.66);--lg-fg3:rgba(60,60,67,.32);
+  --lg-hair:rgba(0,0,0,.08);--lg-rim-a:rgba(255,255,255,.95);--lg-rim-b:rgba(255,255,255,.25);--lg-rim-c:rgba(255,255,255,.7);
+  --lg-glow:rgba(255,255,255,.35);--lg-shadow:0 10px 30px rgba(20,20,40,.14),0 2px 6px rgba(20,20,40,.08);
+  --lg-acc:var(--md-primary);
 }
-body.ng-lite .glass,body.ng-lite #nav{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(24,26,38,.9)!important}
+html.lgx body{font-family:var(--font);letter-spacing:-.005em;color:var(--lg-fg);background:var(--md-surface)}
+html.lgx.dark body,html.lgx.dark .bg{background:color-mix(in srgb,var(--md-surface) 55%,#000)}
 
-/* sidebar (tablet / desktop / sideways) */
-html .side h1{font-size:28px;font-weight:800;letter-spacing:-.8px;text-transform:lowercase}
-html #nav button{border-radius:14px;font-weight:600;transition:background .25s var(--ease),color .25s,transform .35s var(--spring)}
-html #nav button.on{background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);color:#fff}
-html #nav button.on .ni{color:var(--acc)}
-html #nav button:active{transform:scale(.94)}
-html #nav .ni{display:none}
+/* ---------- the color field behind the library: the cover itself, huge, blurred, slowly drifting ---------- */
+html.lgx .bg::before,html.lgx .bg::after{content:"";position:absolute;pointer-events:none}
+html.lgx.lg-hascover .bg::before{inset:-25%;background:var(--lg-cover) center/cover no-repeat;filter:blur(70px) saturate(1.6);opacity:.62;animation:lgDrift 48s ease-in-out infinite alternate;transform-origin:40% 30%}
+html.lgx.light.lg-hascover .bg::before{opacity:.42;filter:blur(70px) saturate(1.5) brightness(1.15)}
+html.lgx .bg::after{inset:0;background:linear-gradient(to bottom,color-mix(in srgb,var(--md-surface) 30%,transparent),color-mix(in srgb,var(--md-surface) 78%,transparent) 55%,var(--md-surface))}
+html.lgx.dark .bg::after{background:linear-gradient(to bottom,rgba(0,0,0,.05),rgba(0,0,0,.42) 50%,rgba(0,0,0,.6))}
+@keyframes lgDrift{0%{transform:scale(1.05) rotate(0) translate(0,0)}50%{transform:scale(1.22) rotate(8deg) translate(4%,-3%)}100%{transform:scale(1.12) rotate(-6deg) translate(-4%,2%)}}
+html.lgx.lg-still .bg::before{animation:none}
+/* a custom background from settings still wins */
+html.lgx .bg:is([style*="background-image"],:has(video,img))::before,html.lgx .bg:is([style*="background-image"],:has(video,img))::after{display:none}
 
-/* titles */
-html .pt{font-size:36px;font-weight:800;letter-spacing:-1.1px;margin:16px 4px 14px;line-height:1.05}
-html .phead h2{font-weight:800;letter-spacing:-1.2px}
-
-/* inputs + buttons */
-html input:not([type=range]):not([type=checkbox]):not([type=radio]),html select,html textarea{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-html .top input{border-radius:999px;padding:11px 18px;background:rgba(255,255,255,.1)}
-html .btn{background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.22);transition:background .2s,transform .35s var(--spring),filter .2s}
-html .btn:active,html .ib:active{transform:scale(.92);transition-duration:.08s}
-html .btn.pri{background:var(--acc);color:#06100a;border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 18px rgba(0,0,0,.25)}
-html .btn.wide{border-radius:14px}
-html .ib{background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.18);transition:background .2s,transform .35s var(--spring)}
-html .ib.big{background:rgba(255,255,255,.94);color:#000;box-shadow:inset 0 1px 1px #fff,0 10px 30px rgba(0,0,0,.35)}
-
-/* song rows + cards */
-html .row{border-radius:16px;padding:8px 10px;transition:background .2s,transform .3s var(--spring)}
-html .row:active{transform:scale(.985)}
-html .row.now{background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
-html .row img{border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
-html .row>.ib{box-shadow:none}
-html .card{border-radius:calc(var(--rad,16px) * 1.4);background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.04)),rgba(22,24,34,.3);border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 24px rgba(0,0,0,.25);transition:transform .4s var(--spring),background .2s}
-html .card:active{transform:scale(.96)}
-html .card img{border-radius:calc(var(--rad,16px) * .9)}
-html .phead img{border-radius:calc(var(--rad,16px) * 1.2)}
-html .devban{border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.05)),rgba(22,24,34,.35);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
-html .row .ph{background:rgba(255,255,255,.16);color:#fff;border-radius:999px;padding:0 7px}
-html .bk-card{border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.03));box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
-
-/* mini player: floating capsule */
-html #mini{border-radius:28px;padding:0 10px 0 8px;gap:12px}
-html #mini img{border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
-html #mProg{left:22px;right:22px;top:auto;bottom:5px;height:3px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
-html #mProg i{border-radius:3px}
-html #mpl{background:rgba(255,255,255,.94);color:#000}
-html .mi b{font-weight:700}
-
-/* now playing */
-html #big.show{animation:ngFade .35s ease both}
-html #big.show .bw{animation:ngUp .55s var(--spring) both}
-html .bbg{filter:blur(70px) brightness(.62) saturate(1.6)}
-html .bw.glass{background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35));border:0;border-radius:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-html #bArt{border-radius:calc(var(--rad,16px) * 1.6);box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08);transition:transform .6s var(--spring)}
-html #big.paused #bArt{transform:scale(.9)}
-html .ti h2{font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.6px}
-html .ti p{opacity:.78;font-weight:500}
-html .tr .ib{width:52px;height:52px;background:rgba(255,255,255,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-html .tr .ib .ic{width:26px;height:26px}
-html .tr .ib.big{width:76px;height:76px;background:rgba(255,255,255,.94)}
-html .tr .ib.big .ic{width:34px;height:34px}
-html #seek,html #vol{height:6px;border-radius:6px;background:linear-gradient(to right,#fff var(--p,0%),rgba(255,255,255,.22) var(--p,0%))}
-html .bb .btn,html .bt .btn,html .tr .btn{background:rgba(255,255,255,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-html #qp{border-radius:30px 30px 0 0;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03)),rgba(18,19,28,.6);transition:transform .5s var(--spring);box-shadow:var(--hi),0 -10px 40px rgba(0,0,0,.4)}
-
-/* sheets, menus */
-html #mod{background:rgba(0,0,0,.4)}
-html #mod:not(.hid) .mb{animation:ngPop .45s var(--spring) both}
-html .mb{background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.03)),rgba(24,26,38,.66);border-radius:calc(var(--rad,16px) * 1.75)}
-html .mb h3{font-size:24px;letter-spacing:-.5px}
-html #menu{background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.03)),rgba(26,28,40,.7);border-radius:20px;padding:6px}
-html #menu:not(.hid){animation:ngPop .3s var(--spring) both;transform-origin:top right}
-html #menu button{border-radius:12px}
-@keyframes ngFade{from{opacity:0}to{opacity:1}}
-@keyframes ngUp{from{transform:translate3d(0,40px,0) scale(.97);opacity:.4}to{transform:none;opacity:1}}
-@keyframes ngPop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
-
-/* ---------- phones: floating tab bar + floating mini player over the content ---------- */
-@media(max-width:760px){
-  html #app{display:block;padding:0;height:100vh;height:100dvh}
-  html body.nomini #app{padding:0}
-  html .side{display:contents}
-  html .main{height:100%;gap:0;position:relative}
-  html .top{position:absolute;z-index:4;left:10px;right:10px;top:calc(8px + env(safe-area-inset-top));padding:8px;gap:6px;flex-wrap:wrap;border-radius:26px}
-  html .top input{flex:1 1 100%;padding:10px 16px}
-  html .top .btn{padding:7px 6px;font-size:12px;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:center}
-  html .top [data-a=upload]{margin-left:0}
-  html #view{height:100%;padding:calc(112px + env(safe-area-inset-top)) 12px calc(176px + env(safe-area-inset-bottom))}
-  html .main:has(#search[style*="none"]) #view{padding-top:calc(64px + env(safe-area-inset-top))}
-  html body.nomini #view{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
-  html .pt{font-size:34px;margin:10px 4px 12px}
-  html #nav{position:fixed;z-index:6;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:0;padding:6px;overflow-x:auto;scrollbar-width:none;border-radius:999px;
-    background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05) 50%,rgba(255,255,255,.08)),rgba(22,24,34,.42);
-    border:1px solid rgba(255,255,255,.16);box-shadow:var(--hi),0 12px 36px rgba(0,0,0,.45);backdrop-filter:var(--bl);-webkit-backdrop-filter:var(--bl)}
-  html #nav::-webkit-scrollbar{display:none}
-  html #nav button{flex:1 0 auto;min-width:50px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 5px;margin:0;border-radius:999px;background:none;color:rgba(235,238,250,.72);font-size:10px;font-weight:600;letter-spacing:0;box-shadow:none}
-  html #nav button.on{background:rgba(255,255,255,.17);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 10px rgba(0,0,0,.18)}
-  html #nav .ni{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:transform .45s var(--spring)}
-  html #nav button.on .ni{transform:scale(1.12)}
-  html #mini{left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));height:62px;border-radius:24px}
-  html #mini img{width:46px;height:46px;border-radius:12px}
-  html .mc{gap:2px}
-  html .mc .ib{width:40px;height:40px}
-  html #mpl{width:42px;height:42px}
-  html #qp{height:76%}
+/* ---------- glass material ---------- */
+html.lgx :is(#nav,#mini,.npp,#menu,#mb,.chip,.lbar .btn,.fab,.sbar,.tacts .ib,.bt .ib,#setp .card-list,#setp .sh .ib,.seg,#qp,.devban,.toast){
+  isolation:isolate;
+  background:var(--lg-tint);
+  -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat));backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat));
+  box-shadow:inset 0 0 0 .5px var(--lg-hair),inset 0 1px 1px var(--lg-glow),inset 0 0 18px var(--lg-glow);
+  border:0;
 }
-@media (orientation:landscape) and (max-height:500px){
-  html #mini{border-radius:22px}
+html.lgx :is(.chip,.lbar .btn,.sbar,.tacts .ib,.bt .ib,#setp .card-list,#setp .sh .ib,.seg,.devban,.npp){position:relative}
+/* refraction where it's supported (Full mode, Chromium) */
+html.lgx.lg-svg :is(#nav,#mini,#menu,#mb,.npp,.lg-drop).lg-live{backdrop-filter:var(--lg-url) brightness(1.04)}
+html.lgx.lg-svg.light :is(#nav,#mini,#menu,#mb,.npp,.lg-drop).lg-live{backdrop-filter:var(--lg-url) brightness(1.08)}
+html.lgx.lg-svg.lg-scrolling :is(#nav,#mini,#menu,#mb,.npp,.lg-drop).lg-live{backdrop-filter:blur(var(--lg-blur)) saturate(var(--lg-sat))}
+/* Light = blur only; Off = solid tint, no backdrop work at all */
+html.lgx[data-glass=off] :is(#nav,#mini,.npp,#menu,#mb,.lg-drop,.chip,.lbar .btn,.fab,.sbar,.tacts .ib,.bt .ib,#setp .card-list,#setp .sh .ib,.seg,#qp,.devban){backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:var(--lg-tint-strong)}
+html.lgx[data-glass=off].dark :is(#nav,#mini,#menu,#mb,#qp){background:rgba(38,38,44,.96)}
+html.lgx[data-glass=off].light :is(#nav,#mini,#menu,#mb,#qp){background:rgba(248,248,250,.97)}
+
+/* specular rim: a thin bright edge, brightest at the top-left, plus a faint bottom-right catch light */
+html.lgx :is(#nav,#mini,.npp,#menu,#mb,.lg-drop,.chip,.lbar .btn,.fab,.sbar,.tacts .ib,.bt .ib,#setp .card-list,#setp .sh .ib,.seg,#qp,.devban)::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;padding:1px;
+  background:linear-gradient(135deg,var(--lg-rim-a) 0%,var(--lg-rim-b) 28%,transparent 50%,var(--lg-rim-b) 72%,var(--lg-rim-c) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
 }
-@media (prefers-reduced-motion:reduce){
-  html .bg i{animation:none}
-  html *{animation-duration:.01ms!important}
-}
+/* floating pieces cast a soft shadow */
+html.lgx :is(#nav,#mini,#menu,#mb,.fab,#qp){box-shadow:inset 0 0 0 .5px var(--lg-hair),inset 0 1px 1px var(--lg-glow),inset 0 0 22px var(--lg-glow),var(--lg-shadow)}
+
+/* ---------- type ---------- */
+html.lgx .pt{font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.1;margin:6px 4px 12px;color:var(--lg-fg)}
+html.lgx .st{font-size:22px;font-weight:750;letter-spacing:-.02em;margin:18px 4px 10px;color:var(--lg-fg)}
+html.lgx .sh h1{font-size:34px;font-weight:800;letter-spacing:-.025em}
+html.lgx .msi.sf{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+html.lgx .msi.sf .fl{fill:currentColor;stroke-width:.6}
+html.lgx .msi.sf .tx{fill:currentColor;stroke:none;font:700 6.6px var(--font);text-anchor:middle}
+html.lgx .msi.sf.on{stroke-width:2.15}
+html.lgx .msi.sf.hf path,html.lgx .hrt.on .msi.sf path{fill:currentColor}
+
+/* ---------- top bar: glass search capsule + round glass buttons ---------- */
+html.lgx .top{padding:calc(10px + env(safe-area-inset-top)) 16px 6px;gap:10px}
+html.lgx .sbar{height:44px;border-radius:22px;padding:0 6px 0 14px;color:var(--lg-fg2);gap:8px}
+html.lgx .sbar .msi{width:19px;height:19px}
+html.lgx .sbar input{font-size:16px;color:var(--lg-fg)}
+html.lgx .sbar input::placeholder{color:var(--lg-fg2)}
+html.lgx .tacts .ib{width:44px;height:44px;border-radius:22px;color:var(--lg-fg)}
+html.lgx .tacts .ib .msi{width:21px;height:21px}
+
+/* ---------- library content: crisp ---------- */
+html.lgx #view{padding:0 16px calc(var(--nav-h) + var(--mini-h) + 64px + env(safe-area-inset-bottom))}
+html.lgx .chips{gap:8px;padding:2px 2px 6px}
+html.lgx .chip{height:34px;padding:0 14px;border-radius:17px;color:var(--lg-fg);font-size:14px;font-weight:600;gap:6px}
+html.lgx .chip .msi{width:16px;height:16px}
+html.lgx .chip.on{background:color-mix(in srgb,var(--lg-acc) 30%,var(--lg-tint));color:var(--lg-fg)}
+html.lgx.light .chip.on{background:color-mix(in srgb,var(--lg-acc) 22%,rgba(255,255,255,.5))}
+html.lgx .chip .rp,html.lgx .btn .rp,html.lgx .row .rp,html.lgx #nav .rp,html.lgx .gb .rp,html.lgx .seg .rp{display:none}
+html.lgx .lbar{gap:12px;margin:8px 0 10px}
+html.lgx .lbar .btn{height:48px;border-radius:14px;font-size:16px;font-weight:650;color:var(--lg-acc);gap:8px}
+html.lgx.light .lbar .btn{color:color-mix(in srgb,var(--lg-acc) 85%,#000)}
+html.lgx .lbar .btn .msi{width:18px;height:18px}
+html.lgx .lbar .btn:active{border-radius:14px}
+html.lgx .lmeta{color:var(--lg-fg2)}
+html.lgx .lmeta select{color:var(--lg-fg2);background:transparent;border:0}
+html.lgx .lst{display:flex;flex-direction:column;gap:0}
+html.lgx .row{background:transparent!important;border-radius:0;min-height:64px;padding:6px 0 6px 2px;gap:14px;position:relative;color:var(--lg-fg)}
+html.lgx .row::before{content:"";position:absolute;left:68px;right:0;bottom:0;height:.5px;background:var(--lg-hair)}
+html.lgx .row img{width:52px;height:52px;border-radius:9px;box-shadow:0 1px 3px rgba(0,0,0,.25),inset 0 0 0 .5px rgba(255,255,255,.1)}
+html.lgx .row .rm b{font-size:16px;font-weight:550;letter-spacing:-.01em}
+html.lgx .row .rm span{font-size:13.5px;color:var(--lg-fg2)}
+html.lgx .row .dur{color:var(--lg-fg3);font-style:normal;font-variant-numeric:tabular-nums}
+html.lgx .row>.ib{color:var(--lg-fg2);width:36px;height:36px}
+html.lgx .row>.ib .msi{width:20px;height:20px}
+html.lgx .row .hrt.on{color:#ff375f}
+html.lgx .row.now b{color:var(--lg-acc)}
+html.lgx.light .row.now b{color:color-mix(in srgb,var(--lg-acc) 80%,#000)}
+html.lgx .row.now img{border-radius:9px}
+html.lgx .ph{background:color-mix(in srgb,var(--lg-acc) 22%,transparent);color:var(--lg-fg2);border-radius:5px;padding:0 5px;font-size:10.5px;font-weight:600;margin-right:6px;text-transform:uppercase;letter-spacing:.04em}
+html.lgx .card{border-radius:14px}
+html.lgx .card img{border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+html.lgx .card b{font-weight:600;letter-spacing:-.01em}
+html.lgx .card span{color:var(--lg-fg2)}
+html.lgx .devban{border-radius:24px;color:var(--lg-fg)}
+html.lgx .devban .dvi{border-radius:14px;background:var(--lg-acc);color:var(--md-on-primary)}
+
+/* upload: a small round glass button (it still shrinks on scroll) */
+html.lgx .fab{right:20px;bottom:calc(var(--nav-h) + var(--mini-h) + 40px + env(safe-area-inset-bottom));height:50px;padding:0 18px 0 14px;border-radius:25px;color:var(--lg-fg);font-weight:600;font-size:15px}
+html.lgx .fab .msi{width:20px;height:20px}
+
+/* ---------- tab bar: a floating glass pill with a glass droplet under the active tab ---------- */
+html.lgx #nav{left:16px;right:16px;bottom:calc(14px + env(safe-area-inset-bottom));height:var(--nav-h);padding:0 4px;border-radius:32px;display:flex;align-items:center;gap:0;transform-origin:50% 100%}
+html.lgx #nav button{position:relative;z-index:2;height:56px;flex:1 1 0;gap:1px;padding:0;color:var(--lg-fg);font-size:10.5px;font-weight:600;letter-spacing:0;border-radius:28px;background:none!important;transition:color .3s}
+html.lgx #nav button .ind{width:auto;height:28px;background:none!important;border-radius:0}
+html.lgx #nav button .msi{width:25px;height:25px}
+html.lgx #nav button.on{color:var(--lg-acc)}
+html.lgx.light #nav button.on{color:color-mix(in srgb,var(--lg-acc) 82%,#000)}
+html.lgx #nav button .lb{opacity:.92}
+html.lgx .lg-drop{position:absolute;z-index:1;left:0;top:4px;height:56px;width:76px;border-radius:28px;pointer-events:none;
+  background:radial-gradient(120% 90% at 30% 20%,rgba(255,255,255,.16),rgba(255,255,255,.06) 60%,rgba(255,255,255,.1));box-shadow:inset 0 1px 1px rgba(255,255,255,.25),inset 0 -1px 2px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.12);transition:width .35s var(--lg-ease),opacity .2s}
+html.lgx.light .lg-drop{background:rgba(0,0,0,.055)}
+html.lgx .lg-drop::after{background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,255,255,.06) 35%,transparent 55%,rgba(255,255,255,.22))!important}
+
+/* ---------- mini player: floating glass capsule above the tabs ---------- */
+html.lgx #mini{left:16px;right:16px;bottom:calc(14px + var(--nav-h) + 10px + env(safe-area-inset-bottom));height:var(--mini-h);border-radius:30px;padding:0 6px 0 7px;gap:11px;color:var(--lg-fg);overflow:visible;transform-origin:50% 100%}
+html.lgx #mArt{width:46px;height:46px;border-radius:23px;object-fit:cover;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+html.lgx .mi b{font-size:15px;font-weight:600;letter-spacing:-.01em}
+html.lgx .mi span{font-size:13px;color:var(--lg-fg2)}
+html.lgx #mini .ib{width:42px;height:42px;color:var(--lg-fg);background:none}
+html.lgx #mini .ib .msi{width:22px;height:22px}
+html.lgx #mini .mplay .msi{width:26px;height:26px}
+html.lgx #mProg{left:30px;right:30px;bottom:5px;height:2px;background:var(--lg-hair)}
+html.lgx #mProg i{background:var(--lg-fg);opacity:.8}
+
+/* ---------- Now Playing: the real cover, enlarged and blurred, behind everything ---------- */
+html.lgx #big{background:#000}
+html.lgx.light #big{background:#fff}
+html.lgx .bbg{inset:-30%;filter:blur(56px) saturate(1.35) brightness(.62);opacity:1;transform:scale(1.1);animation:lgDrift 60s ease-in-out infinite alternate}
+html.lgx.light .bbg{filter:blur(56px) saturate(1.2) brightness(1.1);opacity:.75}
+html.lgx.lg-still .bbg{animation:none}
+html.lgx .bw{background:linear-gradient(to bottom,rgba(0,0,0,.05),rgba(0,0,0,.28) 70%);color:#fff}
+html.lgx.light .bw{background:linear-gradient(to bottom,rgba(255,255,255,.08),rgba(255,255,255,.3) 70%);color:#0b0b0f}
+html.lgx #big{--lg-fg:#fff;--lg-fg2:rgba(255,255,255,.66);--lg-fg3:rgba(255,255,255,.38);--lg-tint:rgba(255,255,255,.07);--lg-hair:rgba(255,255,255,.14)}
+html.lgx.light #big{--lg-fg:#0b0b0f;--lg-fg2:rgba(0,0,0,.58);--lg-fg3:rgba(0,0,0,.3);--lg-tint:rgba(255,255,255,.22);--lg-hair:rgba(0,0,0,.06)}
+html.lgx .bt .ib{width:40px;height:40px;border-radius:20px;color:var(--lg-fg)}
+html.lgx .bt small{color:var(--lg-fg2);font-weight:600;letter-spacing:.02em}
+html.lgx #bArt{border-radius:14px;box-shadow:0 24px 50px rgba(0,0,0,.45);transition:transform .7s var(--spring),clip-path .7s var(--spring)}
+html.lgx #big.paused #bArt{transform:scale(.86)}
+html.lgx.lg-still #big.paused #bArt{transform:none}
+html.lgx .ti h2,html.lgx #bT{font-size:24px;font-weight:750;letter-spacing:-.02em;color:var(--lg-fg)}
+html.lgx #bA{font-size:18px;color:var(--lg-fg2);font-weight:500}
+html.lgx #bAl{color:var(--lg-fg3)}
+html.lgx .hrt{color:var(--lg-fg2)}
+html.lgx #bH{width:40px;height:40px;border-radius:20px;background:rgba(255,255,255,.1);color:var(--lg-fg)}
+html.lgx #bH.on{color:#ff375f}
+/* controls panel: glass */
+html.lgx .npp{margin-top:16px;padding:16px 18px 12px;border-radius:30px}
+/* scrubber: thin flat capsule that thickens while you drag (no wave in the glass look) */
+html.lgx .sk{height:26px}
+html.lgx .sk .wv,html.lgx .sk .th{display:none}
+html.lgx .sk .tk{left:0;right:0;height:6px;margin-top:-3px;border-radius:3px;background:var(--lg-fg3);overflow:hidden;transition:height .3s var(--spring),margin .3s var(--spring)}
+html.lgx .sk .tk::before{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--p);background:var(--lg-fg);border-radius:3px}
+html.lgx .sk:has(input:active) .tk{height:12px;margin-top:-6px;border-radius:6px}
+html.lgx .tm{color:var(--lg-fg2);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+/* transport: big plain glyphs, no circles */
+html.lgx .tr{gap:2px;margin:10px 0 4px}
+html.lgx .bgp{gap:18px}
+html.lgx .gb,html.lgx .gb.play{flex:0 0 64px!important;height:64px!important;background:transparent!important;color:var(--lg-fg);border-radius:32px}
+html.lgx .gb.play{flex-basis:76px!important;height:76px!important}
+html.lgx .gb.play::before{display:none}
+html.lgx .gb .msi{width:36px;height:36px}
+html.lgx .gb.play .msi{width:48px;height:48px}
+html.lgx .gb:active{background:rgba(255,255,255,.12)!important}
+html.lgx .tr>.ib{color:var(--lg-fg2)}
+html.lgx .tr>.ib .msi{width:26px;height:26px}
+html.lgx .vr{color:var(--lg-fg2)}
+html.lgx .vr .msi{width:18px;height:18px}
+html.lgx .bb .ib{color:var(--lg-fg2);width:44px;height:44px;border-radius:22px;background:transparent}
+html.lgx .bb .ib .msi{width:22px;height:22px}
+html.lgx .bb .ib.on{color:var(--lg-fg);background:rgba(255,255,255,.16)}
+html.lgx.light .bb .ib.on{background:rgba(0,0,0,.08)}
+/* range sliders (volume, settings): thin glass capsule with a white knob */
+html.lgx input[type=range]{accent-color:var(--lg-fg)}
+html.lgx #vol,html.lgx #setp input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:linear-gradient(to right,var(--lg-fg) var(--v,50%),var(--lg-fg3) var(--v,50%));outline:0}
+html.lgx #vol::-webkit-slider-thumb,html.lgx #setp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35),inset 0 0 0 .5px rgba(0,0,0,.06)}
+
+/* ---------- sheets & dialogs: floating glass, inset from the edges ---------- */
+html.lgx #menu{left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;border-radius:32px;padding:10px 0 12px;color:var(--lg-fg);background:var(--lg-tint-strong)}
+html.lgx #menu button{color:var(--lg-fg);font-size:16px;border-radius:0;background:transparent}
+html.lgx #menu .msi{color:var(--lg-fg2)}
+html.lgx #scrim{background:rgba(0,0,0,.18)}
+html.lgx #mod{background:rgba(0,0,0,.25)}
+html.lgx #mb{border-radius:32px;color:var(--lg-fg);background:var(--lg-tint-strong);margin:0 8px calc(8px + env(safe-area-inset-bottom))}
+html.lgx #qp{border-radius:32px 32px 0 0;background:var(--lg-tint-strong);color:var(--lg-fg)}
+
+/* ---------- settings: big title over the color field, glass group cards ---------- */
+html.lgx #setp{background:transparent;color:var(--lg-fg)}
+html.lgx #setp::before{content:"";position:fixed;inset:0;z-index:-1;background:color-mix(in srgb,var(--md-surface) 55%,#000)}
+html.lgx.light #setp::before{background:var(--md-surface)}
+html.lgx #setp::after{content:"";position:fixed;inset:-25%;z-index:-1;background:var(--lg-cover) center/cover no-repeat;filter:blur(70px) saturate(1.6);opacity:.42;pointer-events:none}
+html.lgx .sh{background:transparent;padding:calc(10px + env(safe-area-inset-top)) 12px 6px;flex-direction:column;align-items:flex-start;gap:6px;position:relative}
+html.lgx #setp .sh .ib{width:40px;height:40px;border-radius:20px;color:var(--lg-fg)}
+html.lgx .sh h1{padding:0 6px}
+html.lgx .sg h2{font-size:13px;font-weight:600;color:var(--lg-fg2);text-transform:uppercase;letter-spacing:.06em;margin:0 18px 8px}
+html.lgx #setp .card-list{border-radius:26px;gap:0;overflow:hidden}
+html.lgx #setp .li{background:transparent;min-height:54px;padding:12px 16px;position:relative}
+html.lgx #setp .li+.li::before,html.lgx #setp .card-list>*+*::before{content:"";position:absolute;left:16px;right:0;top:0;height:.5px;background:var(--lg-hair)}
+html.lgx #setp .lt b{font-weight:550;font-size:16px;color:var(--lg-fg)}
+html.lgx #setp .lt span{color:var(--lg-fg2)}
+html.lgx #setp select,html.lgx #setp input[type=color]{color:var(--lg-fg)}
+/* iOS-style switches; the knob stretches like a droplet while held */
+html.lgx .swt{width:52px;height:32px}
+html.lgx .swt i{border:0;border-radius:16px;background:var(--lg-fg3)}
+html.lgx .swt i::after{left:2px;top:2px;width:28px;height:28px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25);transition:transform .45s var(--spring),width .3s var(--spring),left .3s var(--spring)}
+html.lgx .swt input:checked+i{background:#34c759}
+html.lgx .swt input:checked+i::after{transform:translateX(20px);left:2px;top:2px;width:28px;height:28px;background:#fff}
+html.lgx .swt input:active+i::after{width:36px;height:28px;left:2px;top:2px}
+html.lgx .swt input:checked:active+i::after{left:-6px}
+/* segmented control: glass track, the picked one is a lighter pill */
+html.lgx .seg{border:0;height:36px;border-radius:18px;padding:2px;gap:2px;background:rgba(120,120,128,.2)}
+html.lgx .seg button{border:0!important;border-radius:16px;color:var(--lg-fg);font-weight:600;font-size:13.5px;background:transparent;transition:background-color .3s var(--lg-ease)}
+html.lgx .seg button .msi{display:none}
+html.lgx .seg button.on{background:rgba(255,255,255,.2);box-shadow:0 2px 8px rgba(0,0,0,.15),inset 0 .5px 0 rgba(255,255,255,.5)}
+html.lgx.light .seg button.on{background:#fff}
+html.lgx .btn{border-radius:18px}
+html.lgx #setp .btn{background:rgba(120,120,128,.2);color:var(--lg-fg)}
+html.lgx #setp .btn.pri{background:var(--lg-acc);color:var(--md-on-primary)}
+html.lgx #setp .btn.text{background:transparent;color:var(--lg-acc)}
+
+@media (prefers-reduced-motion:reduce){html.lgx .bg::before,html.lgx .bbg{animation:none}}
+html.lgx #mini .out{display:none}
+html.lgx .bt .btt .out{color:var(--lg-fg3)}
+/* the bars carry text, so they get a little more body than the chips */
+html.lgx.dark :is(#nav,#mini){background:rgba(24,24,30,.38)}
+html.lgx.light :is(#nav,#mini){background:rgba(255,255,255,.46)}
+
+html.lgx :is(.card img,.card,.row img,#mArt){clip-path:none!important}
+/* upload lives in the top bar (a + button), so nothing floats over the song rows */
+html.lgx .fab{display:none!important}
+html.lgx .tacts .lg-up .msi{width:22px;height:22px;stroke-width:2}
+html.lgx.dark :is(#nav,#mini){background:rgba(24,24,30,.34)}
+/* Now Playing panel: lighter glass so the blurred cover shows through, with a strong top-left highlight */
+html.lgx #big .npp{background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.06) 45%,rgba(255,255,255,.1));
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18),inset 0 1.5px 1px rgba(255,255,255,.35),inset 0 0 26px rgba(255,255,255,.07),0 12px 34px rgba(0,0,0,.22)}
+html.lgx.light #big .npp{background:linear-gradient(160deg,rgba(255,255,255,.5),rgba(255,255,255,.22) 45%,rgba(255,255,255,.32))}
+html.lgx #big .npp::after{padding:1.5px;background:linear-gradient(135deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.25) 22%,transparent 46%,rgba(255,255,255,.08) 70%,rgba(255,255,255,.45) 100%)}
+html.lgx #big .npp::before{content:"";position:absolute;left:0;top:0;width:60%;height:55%;border-radius:inherit;pointer-events:none;z-index:2;
+  background:radial-gradient(90% 80% at 0% 0%,rgba(255,255,255,.16),transparent 60%)}
+html.lgx .bw{background:linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,.12) 70%)}
+html.lgx .bbg{filter:blur(48px) saturate(1.45) brightness(.72)}
+html.lgx .tacts{gap:8px}
+html.lgx .tacts .ib{width:40px;height:40px;border-radius:20px}
+html.lgx .top{gap:8px}
