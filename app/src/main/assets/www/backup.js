@@ -272,7 +272,7 @@
       const manifest = {
         kind: 'nortest-backup', v: BK_VER, created: new Date().toISOString(), mode: full ? 'full' : 'library',
         songs: list, playlists: pls,
-        meta: { S: S2, hist, queue, qi, plays },
+        meta: { S: S2, hist, queue, qi, plays, b1: { bmarks: (await meta('bmarks')) || {}, smart: (await meta('smart')) || [], plog: (await meta('plog')) || [], ldays: (await meta('ldays')) || {} } },
         bg
       };
       const readme = `nortest backup made ${new Date().toLocaleString()}\n\nTo restore: open nortest, tap Backup, then "Choose backup file" and pick this .zip.\n${full ? 'Your song files are in the audio folder.' : 'This is a library-only backup (no audio files).'}\n`;
@@ -430,6 +430,26 @@
       const curPlays = (await meta('plays')) || {};
       Object.entries(mm.plays || {}).forEach(([id, n]) => { const t = idMap[id]; if (t) curPlays[t] = Math.max(curPlays[t] || 0, n); });
       plays = curPlays; await save('plays', plays);
+      /* 1.6: bookmarks, smart playlists, the dated play log and daily minutes (merged, never replaced) */
+      if (mm.b1) {
+        try {
+          const b = mm.b1, mapId = id => idMap[id] || (String(id).startsWith('dev:') ? id : null);
+          const bm = (await meta('bmarks')) || {};
+          Object.entries(b.bmarks || {}).forEach(([id, L]) => { const t = mapId(id); if (t && Array.isArray(L)) bm[t] = [...new Set([...(bm[t] || []), ...L])].sort((x, y) => x - y); });
+          await save('bmarks', bm);
+          const sm = (await meta('smart')) || [];
+          (b.smart || []).forEach(x => { if (x && x.id && !sm.some(y => y.id === x.id)) sm.push(x); });
+          await save('smart', sm);
+          const pl = (await meta('plog')) || [], seen = new Set(pl.map(e => e[0] + '@' + e[1]));
+          (b.plog || []).forEach(e => { const t = Array.isArray(e) && mapId(e[0]); if (t && !seen.has(t + '@' + e[1])) pl.push([t, e[1]]); });
+          pl.sort((x, y) => x[1] - y[1]);
+          await save('plog', pl.slice(-30000));
+          const ld = (await meta('ldays')) || {};
+          Object.entries(b.ldays || {}).forEach(([k, v]) => { ld[k] = Math.max(ld[k] || 0, +v || 0); });
+          await save('ldays', ld);
+          if (window.__b1) Object.assign(window.__b1.B1, { bmarks: bm, smart: sm, plog: pl.slice(-30000), ldays: ld });
+        } catch (e) { }
+      }
       const curHist = (await meta('hist')) || [];
       const newHist = [...curHist, ...mapIds(mm.hist).filter(id => !curHist.includes(id))].slice(0, 100);
       await save('hist', newHist);
