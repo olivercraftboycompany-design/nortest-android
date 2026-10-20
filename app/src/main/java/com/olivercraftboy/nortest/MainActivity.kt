@@ -14,7 +14,9 @@ import android.os.Message
 import android.provider.Settings
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
+import android.webkit.CookieManager
 import android.webkit.MimeTypeMap
+import android.webkit.PermissionRequest
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -138,6 +140,9 @@ class MainActivity : ComponentActivity() {
             // so music keeps playing in the background.
             wv.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false)
         }
+        // Embedded players (YouTube / Spotify) keep their consent and session cookies inside their frames.
+        CookieManager.getInstance().setAcceptCookie(true)
+        CookieManager.getInstance().setAcceptThirdPartyCookies(wv, true)
         wv.addJavascriptInterface(NortestBridge(this), "NortestNative")
         wv.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -152,6 +157,8 @@ class MainActivity : ComponentActivity() {
                 val url = request.url
                 if (url.host == HOST) return false
                 if (url.scheme == "blob" || url.scheme == "data") return false
+                // Navigations inside an embedded player's frame (YouTube / Spotify) stay in that frame.
+                if (!request.isForMainFrame && (url.scheme == "https" || url.scheme == "http")) return false
                 return try {
                     startActivity(Intent(Intent.ACTION_VIEW, url)); true
                 } catch (_: ActivityNotFoundException) { true }
@@ -192,6 +199,14 @@ class MainActivity : ComponentActivity() {
             }
 
             override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?) = false
+
+            // Only protected-media playback, and only for the Spotify / YouTube players; everything else is denied (the default).
+            override fun onPermissionRequest(request: PermissionRequest) {
+                val host = request.origin?.host.orEmpty()
+                val trusted = listOf("spotify.com", "youtube.com", "youtube-nocookie.com").any { host == it || host.endsWith(".$it") }
+                val ok = request.resources.filter { it == PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID }
+                if (trusted && ok.isNotEmpty()) request.grant(ok.toTypedArray()) else request.deny()
+            }
         }
         root.addView(wv, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         webView = wv

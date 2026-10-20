@@ -64,6 +64,13 @@ class NortestBridge(private val activity: MainActivity) {
         )
     }
 
+    /** Keeps the screen on while a song streams (the page's Wake Lock request; WebView has no Wake Lock API). */
+    @JavascriptInterface
+    fun keepScreenOn(on: Boolean) = activity.runOnUiThread {
+        if (on) activity.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else activity.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
     @JavascriptInterface
     fun setFullscreen(on: Boolean) = activity.runOnUiThread { activity.setImmersiveBars(on) }
 
