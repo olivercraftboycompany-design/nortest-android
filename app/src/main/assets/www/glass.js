@@ -121,7 +121,7 @@ const LG = (() => {
   const coverTick = () => {
     let src = '';
     try { if (typeof cur !== 'undefined' && cur && typeof cover === 'function') src = cover(cur); } catch (e) { }
-    if (!src) { try { const im = document.querySelector('#view img[src]:not([src^="data:image/svg"])'); if (im) src = im.src; } catch (e) { } }
+    if (!src) { try { const im = document.querySelector('#view img[src]:not([src^="data:image/svg"]):not(.rf)'); if (im) src = im.src; } catch (e) { } }
     if (src && src.startsWith('data:image/svg')) src = '';
     if (src === lastCover) return;
     lastCover = src;

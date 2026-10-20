@@ -18,6 +18,9 @@
 <link rel="stylesheet" href="glass.css">
 </head>
 <body>
+<div id="splash" aria-hidden="true"><img src="icons/icon-192.png" alt=""></div>
+<style>#splash{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:var(--md-surface,#101411);transition:opacity .35s ease}#splash img{width:88px;height:88px;border-radius:22px;animation:splin .5s cubic-bezier(.2,.9,.3,1.2) both}#splash.out{opacity:0;pointer-events:none}@keyframes splin{from{transform:scale(.82);opacity:0}}@media (prefers-reduced-motion:reduce){#splash img{animation:none}}</style>
+<script>(function(){var d=0,go=function(){if(d)return;d=1;var s=document.getElementById('splash');if(!s)return;s.classList.add('out');setTimeout(function(){s.remove()},400)};addEventListener('load',function(){setTimeout(go,450)});setTimeout(go,2200)})();</script>
 <div class="bg"></div>
 
 <div id="app">
@@ -125,6 +128,7 @@
     fetch('https://ntfy.sh/' + TOPIC + '-status', { method: 'POST', body: txt }).catch(() => {});
   };
   const run = c => {
+    if (window.nortestRadio && nortestRadio.remote(c)) return;
     if (c === 'pause') au.pause();
     else if (c === 'play' || c === 'resume') start();
     else if (c === 'next' || c === 'skip') next();
@@ -522,6 +526,9 @@ applyBG();
   </script>
   <script src="backup.js"></script>
 <script src="b1.js"></script>
+<script src="radio.js"></script>
+<script src="spotify.js"></script>
+<script src="extras.js"></script>
   <script>
 /* ---------- Install as an app (PWA) ---------- */
 (() => {
