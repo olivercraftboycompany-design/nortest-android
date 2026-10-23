@@ -387,6 +387,7 @@ ${mode === 'paste' ? `<label for="spn">Playlist name</label><input id="spn" type
   const live = () => SM.on && cur && cur.stream;
   window.spNow = () => SM.on && cur && cur.stream ? { id: cur.id, title: cur.title, artist: cur.artist, pos: SM.t || 0, dur: SM.d || 0, playing: !!SM.playing } : null;
   window.spCtl = { play: p => { try { p ? sResume() : sPause(); } catch (e) { } }, seek: t => { try { sSeek(t); } catch (e) { } } };
+  window.spSheet = (mode, u) => sheet(mode, u);
   const _origPause = HTMLMediaElement.prototype.pause;
   const ytSave = () => { const k = Object.keys(YTC); if (k.length > 3000) k.slice(0, k.length - 3000).forEach(x => delete YTC[x]); try { localStorage.setItem(YTK, JSON.stringify(YTC)); } catch (e) { } };
   const ensureEl = () => {

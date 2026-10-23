@@ -140,7 +140,7 @@ function pHTML() {
     return `<div class="dhead"><button class="ib" data-a="back" aria-label="Back">${mi('keyboard_arrow_down')}</button></div><div class="phead"><img src="${pcover(p)}" alt=""><div><small>Playlist</small><h2>${esc(p.name)}</h2><span>${nS(ids.length)}</span><div class="acts"><button class="btn pri" data-a="pplay">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="pshuf">${mi('shuffle')}Shuffle</button><button class="btn tonal" data-a="padd">${mi('add')}Add songs</button><button class="btn text" data-a="pren">Rename</button><button class="btn text" data-a="pdel">Delete</button></div></div></div>` + list(ids, 'This playlist is empty. Use Add songs.');
   }
   sub = null;
-  return `<div class="grid"><div class="card new" data-a="pnew"><div class="plus">${mi('add')}</div><b>New playlist</b><span>&nbsp;</span></div>${pls.map(p => card(p.name, nS(p.songs.filter(byId).length), pcover(p), p.id)).join('')}</div>`;
+  return `<div class="grid"><div class="card new" data-a="pnew"><div class="plus">${mi('add')}</div><b>New playlist</b><span>&nbsp;</span></div><div class="card new" data-a="files"><div class="plus">${mi('library_add')}</div><b>Add songs from Files</b><span>&nbsp;</span></div>${pls.map(p => card(p.name, nS(p.songs.filter(byId).length), pcover(p), p.id)).join('')}</div>`;
 }
 const qList = () => queue.length ? queue.map((id, i) => {
   const s = byId(id);
@@ -152,6 +152,8 @@ const addRows = (p, q) => songs.filter(s => match(s, q)).map(s => `<div class="r
 const sorters = { added: (a, b) => b.added - a.added, title: (a, b) => a.title.localeCompare(b.title), artist: (a, b) => a.artist.localeCompare(b.artist), album: (a, b) => a.album.localeCompare(b.album) };
 const sortSel = () => `<select data-s="sort" aria-label="Sort">${[['added', 'Recently added'], ['title', 'Title'], ['artist', 'Artist'], ['album', 'Album'], ['plays', 'Most played']].map(([v, t]) => `<option value="${v}" ${S.sort === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
 const libBar = n => `${devTools()}<div class="lbar"><button class="btn pri" data-a="playall">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="shufall">${mi('shuffle')}Shuffle</button></div><div class="lmeta"><span>${n} song${n === 1 ? '' : 's'}</span>${sortSel()}</div>`;
+/* "Paste a playlist or song" box on the Library (from Carter): one input, clipboard Paste, Add runs the Spotify/YouTube importer */
+const linkBox = () => `<div class="impbox"><div class="improw"><input id="lbin" type="url" inputmode="url" placeholder="Paste a playlist or song link" autocomplete="off"><button class="btn sm tonal" data-a="lbpaste">Paste</button></div><button class="btn pri wide" data-a="lbadd">Add</button><p class="imphint">Works with Spotify playlists, albums and songs, and YouTube or YouTube Music songs.</p></div>`;
 /* "Recently played" carousel: hero item first, then smaller ones (multi-browse) */
 const recent = () => {
   const ids = hist.filter(byId).slice(0, 12);
@@ -168,7 +170,7 @@ function render() {
   const q = $('#search').value.toLowerCase();
   const y = $('#view').scrollTop;
   let h;
-  if (view === 'library') { const ids = songs.filter(s => match(s, q) && okSong(s)).sort(sorters[S.sort] || sorters.added).map(s => s.id); h = (q ? '' : `<div class="chips"><button class="chip" data-a="nav" data-v="artists">${mi('artist')}Artists</button><button class="chip" data-a="nav" data-v="history">${mi('history')}History</button><button class="chip" data-a="nav" data-v="wrapped">${mi('insights')}Wrapped</button></div>`) + devBanner() + (q ? '' : (window.wrappedBanner ? window.wrappedBanner() : '')) + (q || sub ? '' : recent()) + `<h2 class="st">Songs</h2>` + libBar(ids.length) + list(ids, devScan && !songs.length ? 'Looking for music on your phone...' : 'No songs yet. Tap Upload to add some, or drop audio files here.'); }
+  if (view === 'library') { const ids = songs.filter(s => match(s, q) && okSong(s)).sort(sorters[S.sort] || sorters.added).map(s => s.id); h = (q ? '' : `<div class="chips"><button class="chip" data-a="nav" data-v="artists">${mi('artist')}Artists</button><button class="chip" data-a="nav" data-v="history">${mi('history')}History</button><button class="chip" data-a="nav" data-v="wrapped">${mi('insights')}Wrapped</button></div>`) + devBanner() + (q ? '' : linkBox() + (window.wrappedBanner ? window.wrappedBanner() : '')) + (q || sub ? '' : recent()) + `<h2 class="st">Songs</h2>` + libBar(ids.length) + list(ids, devScan && !songs.length ? 'Looking for music on your phone...' : 'No songs yet. Tap Add songs from Files, or paste a Spotify or YouTube link.'); }
   else if (view === 'favorites') { const ids = songs.filter(s => s.fav).map(s => s.id); h = (ids.length ? `<div class="lbar"><button class="btn pri" data-a="playall">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="shufall">${mi('shuffle')}Shuffle</button></div>` : '') + list(ids, 'No favorites yet. Tap the heart on a song.'); }
   else if (view === 'history') h = (hist.length ? `<div class="chips"><button class="chip" data-a="hclr">Clear history</button></div>` : '') + list(hist.filter(byId), 'Nothing played yet.');
   else if (view === 'queue') h = qHTML();
@@ -358,24 +360,6 @@ au.ontimeupdate = au.onloadedmetadata = () => {
 $('#seek').oninput = e => { $('.sk').style.setProperty('--p', e.target.value + '%'); if (au.duration) au.currentTime = e.target.value / 100 * au.duration; };
 $('#seek').addEventListener('wheel', e => { e.preventDefault(); au.currentTime += e.deltaY < 0 ? 5 : -5; }, { passive: false });
 
-/* ---------- Upload and metadata ---------- */
-const tags = f => new Promise(r => window.jsmediatags ? jsmediatags.read(f, { onSuccess: x => r(x.tags), onError: () => r({}) }) : r({}));
-const addFiles = async fs => {
-  for (const f of fs) {
-    const dur = await new Promise(r => { const a = new Audio(URL.createObjectURL(f)); a.onloadedmetadata = () => { r(a.duration); URL.revokeObjectURL(a.src); }; a.onerror = () => { r(0); URL.revokeObjectURL(a.src); }; });
-    const t = await tags(f), l = t.lyrics;
-    const c = t.picture ? new Blob([new Uint8Array(t.picture.data)], { type: t.picture.format }) : null;
-    const s = {
-      id: crypto.randomUUID(), title: t.title || f.name.replace(/\.[^.]+$/, ''), artist: t.artist || 'Unknown Artist',
-      album: t.album || 'Unknown Album', lyrics: typeof l === 'string' ? l : (l && l.lyrics) || '',
-      cover: c, blob: f, fav: false, added: Date.now(), dur
-    };
-    songs.push(s); await put('songs', s);
-    render();
-  }
-};
-$('#file').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
-
 /* ---------- Modal and menu ---------- */
 function nS(n) { return n + (n === 1 ? ' song' : ' songs'); }
 const mod = h => { $('#mb').innerHTML = h; $('#mod').classList.remove('hid'); };
@@ -389,7 +373,7 @@ async function settings() {
   let devs = [];
   try { devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audiooutput'); } catch (e) { }
   const p = $('#setp'), wasOpen = !p.classList.contains('hid'), y = wasOpen ? p.scrollTop : 0;
-  const ver = (NN && NN.appVersion ? (() => { try { return NN.appVersion(); } catch (e) { return ''; } })() : '') || '1.6.5';
+  const ver = (NN && NN.appVersion ? (() => { try { return NN.appVersion(); } catch (e) { return ''; } })() : '') || '1.9.0';
   const rs = window.tabRemote ? tabRemote.state() : 'off';
   const hidden = NN ? dev.filter(x => x.hidden) : [];
   p.innerHTML = `<header class="sh"><button class="ib" data-a="setx" aria-label="Back"><span class="rot90">${mi('keyboard_arrow_down')}</span></button><h1>Settings</h1></header>
@@ -432,7 +416,7 @@ async function settings() {
   <div class="li"><div class="lt"><b>Show phone songs</b><span>In the library, albums and artists lists</span></div>${sw('showPhone', !S.noPhone)}</div>
   <div class="li col"><div class="lt"><b>Hidden songs</b><span>${hidden.length ? hidden.length + ' hidden from your library' : 'None hidden'}</span></div>${hidden.length ? `<div class="hl-list">${hidden.map(x => `<div class="row" data-id="${x.id}"><img src="${cover(x)}" alt=""><div class="rm"><b>${esc(x.title)}</b><span>${esc(x.artist)}</span></div><button class="btn sm tonal" data-a="dunhide1">Unhide</button></div>`).join('')}</div><button class="btn text" data-a="dunhide">Unhide all</button>` : ''}</div>` : ''}
   <div class="li col"><div class="lt"><b>Hide short clips</b><span data-out="minLen">${NUM.minLen(+S.minLen || 0)}</span></div><input type="range" data-n="minLen" min="0" max="120" step="5" value="${+S.minLen || 0}"></div>
-  <div class="li"><div class="lt"><b>Songs in your library</b><span>${own().length} imported${NN ? ' + ' + songs.filter(x => x.device).length + ' on this phone' : ''}, ${pls.length} playlists</span></div><button class="btn tonal" data-a="upload">Upload</button></div>
+  <div class="li"><div class="lt"><b>Songs in your library</b><span>${own().length} imported${NN ? ' + ' + songs.filter(x => x.device).length + ' on this phone' : ''}, ${pls.length} playlists</span></div><button class="btn tonal" data-a="files">Add songs</button></div>
   <div class="li"><div class="lt"><b>Clear play history</b><span>${nS(hist.length)} in History</span></div><button class="btn text" data-a="hclr2">Clear</button></div>
   <div class="li"><div class="lt"><b>Rebuild library</b><span>Reload everything from storage${NN ? ' and rescan the phone' : ''}</span></div><button class="btn text" data-a="rebuild">Rebuild</button></div>
 </div></section>
@@ -469,8 +453,8 @@ async function settings() {
 }
 const rangeFill = r => { const mn = +r.min || 0, mx = +r.max || 100; r.style.setProperty('--p', ((r.value - mn) / (mx - mn) * 100) + '%'); };
 document.addEventListener('input', e => { if (e.target.type === 'range' && e.target.closest('#setp')) rangeFill(e.target); });
-/* the Upload FAB shrinks to an icon while you scroll down */
-(() => { let last = 0; $('#view').addEventListener('scroll', e => { const y = e.target.scrollTop; $('.fab').classList.toggle('small', y > 40 && y >= last - 2); last = y; }, { passive: true }); })();
+/* the FAB (when present) shrinks to an icon while you scroll down */
+(() => { const f = document.querySelector('.fab'); if (!f) return; let last = 0; $('#view').addEventListener('scroll', e => { const y = e.target.scrollTop; f.classList.toggle('small', y > 40 && y >= last - 2); last = y; }, { passive: true }); })();
 const closeSettings = () => { $('#setp').classList.add('hid'); document.body.classList.remove('set-open'); };
 /* dynamic color from the current cover (or the accent color) */
 const applyColor = () => M3.apply(cur ? cover(cur) : '', { theme: S.theme || 'system', dynamic: S.dyn !== false, accent: S.accent });
@@ -518,7 +502,9 @@ Object.assign(A, {
   opg: b => { sub = b.dataset.k; render(); $('#view').scrollTop = 0; },
   rplay: (b, id) => { if (window.JAM && JAM.startList(hist.filter(byId), id)) return; playList(hist.filter(byId), id); },
   dsrc: b => { S.src = b.dataset.v; save('S', S); render(); },
-  upload: () => $('#file').click(),
+  files: () => { if (window.NTFILES) NTFILES.pick(); },
+  lbadd: () => { const i = $('#lbin'), u = ((i && i.value) || '').trim(); if (i) i.value = ''; if (!u || !window.spSheet) return; spSheet('link', u); const g = document.querySelector('[data-a="spgo"]'); if (g) A.spgo(g); },
+  lbpaste: async () => { try { const t = await navigator.clipboard.readText(); if (t && $('#lbin')) { $('#lbin').value = t.trim(); A.lbadd(); } } catch (e) { toast('Allow paste access to use Paste'); } },
   fs: () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(),
   settings: () => settings(),
   setx: () => closeSettings(),
@@ -639,7 +625,7 @@ Object.assign(A, {
   prsave: async () => { const p = cp(); p.name = $('#pn').value.trim() || p.name; await put('playlists', p); closeMod(); render(); }
 });
 addEventListener('dragover', e => e.preventDefault());
-addEventListener('drop', e => { e.preventDefault(); addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('audio/'))); });
+addEventListener('drop', e => e.preventDefault());
 /* Back (Android back gesture via the app shell, or Esc): close the top-most open layer; false = nothing was open */
 window.__nortestBack = () => {
   const open = s => { const e = $(s); return e && !e.classList.contains('hid'); };
