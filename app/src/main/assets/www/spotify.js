@@ -385,6 +385,8 @@ ${mode === 'paste' ? `<label for="spn">Playlist name</label><input id="spn" type
   /* ================= streaming player (YouTube embed, Spotify embed as fallback) ================= */
   const SM = { on: false, s: null, yt: null, ytP: null, spP: null, spc: null, el: null, playing: false, cand: [], ci: 0, tok: 0, t: 0, d: 0, mode: '', poll: 0, hint: 0, bad: 0, badAt: 0, spWas: false, loaded: '' };
   const live = () => SM.on && cur && cur.stream;
+  window.spNow = () => SM.on && cur && cur.stream ? { id: cur.id, title: cur.title, artist: cur.artist, pos: SM.t || 0, dur: SM.d || 0, playing: !!SM.playing } : null;
+  window.spCtl = { play: p => { try { p ? sResume() : sPause(); } catch (e) { } }, seek: t => { try { sSeek(t); } catch (e) { } } };
   const _origPause = HTMLMediaElement.prototype.pause;
   const ytSave = () => { const k = Object.keys(YTC); if (k.length > 3000) k.slice(0, k.length - 3000).forEach(x => delete YTC[x]); try { localStorage.setItem(YTK, JSON.stringify(YTC)); } catch (e) { } };
   const ensureEl = () => {
@@ -558,6 +560,7 @@ ${mode === 'paste' ? `<label for="spn">Playlist name</label><input id="spn" type
     msHandlers(false);
   };
   const ended = () => {
+    if (window.JAM && JAM.next(true)) return;
     if (S.rep === 2) { sSeek(0); sResume(); }
     else if (S.rep !== 1 && !S.shuf && qi === queue.length - 1) { setPlaying(false); }
     else next();

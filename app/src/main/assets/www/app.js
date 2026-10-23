@@ -158,7 +158,7 @@ const recent = () => {
   if (ids.length < 2) return '';
   return `<section class="rsec"><h2 class="st">Recently played</h2><div class="cs">${ids.map((id, i) => { const s = byId(id); return `<div class="cs-item ${i === 0 ? 'hero' : ''}" data-a="rplay" data-id="${id}"><img src="${cover(s)}" alt="" loading="lazy"><div class="cs-t"><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div></div>`; }).join('')}</div></section>`;
 };
-const TITLES = { library: 'Library', favorites: 'Favorites', albums: 'Albums', artists: 'Artists', queue: 'Queue', playlists: 'Playlists', history: 'History', radio: 'Radio' };
+const TITLES = { library: 'Library', favorites: 'Favorites', albums: 'Albums', artists: 'Artists', queue: 'Queue', playlists: 'Playlists', history: 'History', radio: 'Radio', wrapped: 'Wrapped' };
 function render() {
   const navV = view === 'artists' || view === 'history' ? 'library' : view;
   document.querySelectorAll('#nav button').forEach(b => { const on = b.dataset.v === navV; b.classList.toggle('on', on); b.setAttribute('aria-current', on ? 'page' : 'false'); });
@@ -168,13 +168,14 @@ function render() {
   const q = $('#search').value.toLowerCase();
   const y = $('#view').scrollTop;
   let h;
-  if (view === 'library') { const ids = songs.filter(s => match(s, q) && okSong(s)).sort(sorters[S.sort] || sorters.added).map(s => s.id); h = (q ? '' : `<div class="chips"><button class="chip" data-a="nav" data-v="artists">${mi('artist')}Artists</button><button class="chip" data-a="nav" data-v="history">${mi('history')}History</button></div>`) + devBanner() + (q || sub ? '' : recent()) + `<h2 class="st">Songs</h2>` + libBar(ids.length) + list(ids, devScan && !songs.length ? 'Looking for music on your phone...' : 'No songs yet. Tap Upload to add some, or drop audio files here.'); }
+  if (view === 'library') { const ids = songs.filter(s => match(s, q) && okSong(s)).sort(sorters[S.sort] || sorters.added).map(s => s.id); h = (q ? '' : `<div class="chips"><button class="chip" data-a="nav" data-v="artists">${mi('artist')}Artists</button><button class="chip" data-a="nav" data-v="history">${mi('history')}History</button><button class="chip" data-a="nav" data-v="wrapped">${mi('insights')}Wrapped</button></div>`) + devBanner() + (q ? '' : (window.wrappedBanner ? window.wrappedBanner() : '')) + (q || sub ? '' : recent()) + `<h2 class="st">Songs</h2>` + libBar(ids.length) + list(ids, devScan && !songs.length ? 'Looking for music on your phone...' : 'No songs yet. Tap Upload to add some, or drop audio files here.'); }
   else if (view === 'favorites') { const ids = songs.filter(s => s.fav).map(s => s.id); h = (ids.length ? `<div class="lbar"><button class="btn pri" data-a="playall">${mi('play_arrow', 1)}Play</button><button class="btn tonal" data-a="shufall">${mi('shuffle')}Shuffle</button></div>` : '') + list(ids, 'No favorites yet. Tap the heart on a song.'); }
   else if (view === 'history') h = (hist.length ? `<div class="chips"><button class="chip" data-a="hclr">Clear history</button></div>` : '') + list(hist.filter(byId), 'Nothing played yet.');
   else if (view === 'queue') h = qHTML();
   else if (view === 'playlists') h = pHTML();
   else if (view === 'radio') h = window.radioHTML ? radioHTML() : '';
-  else h = groups(view);
+  else if (view === 'wrapped') h = window.wrappedHTML ? window.wrappedHTML() : '';
+  else h = view === 'albums' && window.albumsHTML ? window.albumsHTML(sub) : groups(view);
   const backLib = !sub && (view === 'artists' || view === 'history') ? `<div class="dhead"><button class="ib" data-a="nav" data-v="library" aria-label="Back to Library">${mi('keyboard_arrow_down')}</button></div>` : '';
   $('#view').innerHTML = backLib + (sub ? '' : `<h1 class="pt">${TITLES[view] || view}</h1>`) + h;
   $('#view').scrollTop = y;
@@ -345,7 +346,7 @@ au.onplay = au.onpause = pi;
 au.onended = () => {
   if (S.rep === 2) { au.currentTime = 0; start(); }
   else if (S.rep === 0 && !S.shuf && qi === queue.length - 1) pi();
-  else next();
+  else { if (window.JAM && JAM.next(true)) return; next(); }
 };
 au.ontimeupdate = au.onloadedmetadata = () => {
   const pc = au.duration ? au.currentTime / au.duration * 100 : 0;
@@ -515,7 +516,7 @@ Object.assign(A, {
   nav: b => { view = b.dataset.v; sub = null; $('#search').value = ''; render(); $('#view').scrollTop = 0; },
   back: () => { sub = null; render(); $('#view').scrollTop = 0; },
   opg: b => { sub = b.dataset.k; render(); $('#view').scrollTop = 0; },
-  rplay: (b, id) => playList(hist.filter(byId), id),
+  rplay: (b, id) => { if (window.JAM && JAM.startList(hist.filter(byId), id)) return; playList(hist.filter(byId), id); },
   dsrc: b => { S.src = b.dataset.v; save('S', S); render(); },
   upload: () => $('#file').click(),
   fs: () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(),
@@ -523,9 +524,10 @@ Object.assign(A, {
   setx: () => closeSettings(),
   mx: closeMod,
   eqreset: () => { S.bass = S.mid = S.treb = 0; save('S', S); applyEQ(); settings(); },
-  play: (b, id) => { queue = [...lastList]; load(queue.indexOf(id)); },
+  play: (b, id) => { if (window.JAM && JAM.startList(lastList, id)) return; queue = [...lastList]; load(queue.indexOf(id)); },
   toggle: () => { if (cur) au.paused ? start() : au.pause(); },
-  next, prev,
+  next: (b, id) => { if (window.JAM && JAM.next(false)) return; next(); },
+  prev: (b, id) => { if (window.JAM && JAM.prev()) return; prev(); },
   b10: () => au.currentTime -= 10, f10: () => au.currentTime += 10,
   open: () => $('#big').classList.add('show'),
   close: () => { $('#big').classList.remove('show', 'lyr'); $('#qp').classList.remove('open'); },
@@ -603,8 +605,8 @@ function modes() {
 }
 $('#vol').oninput = e => { S.vol = +e.target.value; au.volume = S.vol; e.target.style.setProperty('--p', S.vol * 100 + '%'); save('S', S); };
 Object.assign(A, {
-  playall: () => playList(lastList),
-  shufall: () => playList(shuffle(lastList)),
+  playall: () => { if (!(window.JAM && JAM.startList(lastList, null))) playList(lastList); },
+  shufall: () => { if (!(window.JAM && JAM.startList(shuffle(lastList), null))) playList(shuffle(lastList)); },
   shuf: () => { S.shuf = !S.shuf; save('S', S); modes(); },
   rep: () => { S.rep = (S.rep + 1) % 3; save('S', S); modes(); },
   hclr: () => { hist = []; save('hist', hist); render(); },
@@ -708,7 +710,7 @@ au.addEventListener('error', () => {
   if (s.device && !s._retry && au.src.startsWith(DEVB)) return;          /* the phone-song fallback below tries first */
   try { NN ? NN.toast('Can\'t play ' + s.title) : console.warn('Cannot play', s.title); } catch (e) { }
   badRun = Date.now() - badAt < 4000 ? badRun + 1 : 1; badAt = Date.now();
-  if (queue.length > 1 && badRun < Math.min(queue.length, 5)) setTimeout(() => { if (cur === s) next(); }, 600);
+  if (queue.length > 1 && badRun < Math.min(queue.length, 5)) setTimeout(() => { if (cur === s) { if (window.JAM && JAM.next(true)) return; next(); } }, 600);
 });
 /* ---------- Music on the phone: actions + style ---------- */
 Object.assign(A, {
@@ -739,7 +741,7 @@ if (NN) {
       if (cur !== s) return;
       const t = au.currentTime;
       url = URL.createObjectURL(b); au.src = url; au.currentTime = t; start();
-    }).catch(() => { try { NN.toast('Could not play ' + s.title); } catch (e) { } if (cur === s && queue.length > 1) next(); });
+    }).catch(() => { try { NN.toast('Could not play ' + s.title); } catch (e) { } if (cur === s && queue.length > 1) { if (window.JAM && JAM.next(true)) return; next(); } });
   });
 }
 
@@ -767,6 +769,7 @@ function crossfade() {
     g.currentTime = t; g.play().catch(() => { });
     ramp(G.ghost, 1, 0, sec); ramp(G.main, 0, 1, sec);
     url = '';                       /* the ghost owns the old blob URL now; load() must not revoke it */
+    if (window.JAM && JAM.next(true)) return;
     next();
     clearTimeout(xf.tm);
     xf.tm = setTimeout(() => { g.pause(); g.removeAttribute('src'); g.load(); if (oldUrl && oldUrl.startsWith('blob:') && oldUrl !== url) URL.revokeObjectURL(oldUrl); xf.busy = false; }, sec * 1000 + 300);
@@ -842,7 +845,7 @@ document.addEventListener('visibilitychange', wake);
     const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
     if (Date.now() - t0 < 600 && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       const side = $('#big').classList.contains('side') && innerHeight > innerWidth;   /* rotated player: axes swap */
-      (side ? dy : dx) < 0 ? next() : prev();
+      (side ? dy : dx) < 0 ? A.next() : A.prev();
       $('#bArt').animate([{ transform: `translateX(${dx < 0 ? -40 : 40}px)`, opacity: .4 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.2,0,0,1)' });
     }
   }, { passive: true });

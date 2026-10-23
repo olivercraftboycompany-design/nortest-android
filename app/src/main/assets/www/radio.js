@@ -418,6 +418,7 @@ ${R.q || R.mode === 'favs' ? '' : `<div class="lmeta rmeta"><span>Country</span>
     fetch('https://ntfy.sh/' + TOPIC + '-status', { method: 'POST', body: txt }).catch(() => { });
     return true;
   };
+  window.nortestRadioNow = () => R.on && R.st ? { id: R.st.id || R.st.url || R.st.name, name: R.st.name || '', call: R.st.call || '', logo: R.st.logo || R.st.favicon || '' } : null;
   window.nortestRadio = {
     remote: c => {
       const m = c.match(/^(?:play\s+)?(?:radio|station)(?:\s+(.+))?$/);
