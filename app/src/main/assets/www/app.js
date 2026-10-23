@@ -504,7 +504,7 @@ Object.assign(A, {
   dsrc: b => { S.src = b.dataset.v; save('S', S); render(); },
   files: () => { if (window.NTFILES) NTFILES.pick(); },
   lbadd: () => { const i = $('#lbin'), u = ((i && i.value) || '').trim(); if (i) i.value = ''; if (!u || !window.spSheet) return; spSheet('link', u); const g = document.querySelector('[data-a="spgo"]'); if (g) A.spgo(g); },
-  lbpaste: async () => { try { const t = await navigator.clipboard.readText(); if (t && $('#lbin')) { $('#lbin').value = t.trim(); A.lbadd(); } } catch (e) { toast('Allow paste access to use Paste'); } },
+  lbpaste: async () => { try { const t = await navigator.clipboard.readText(); if (t && $('#lbin')) { $('#lbin').value = t.trim(); A.lbadd(); } } catch (e) { try { NN ? NN.toast('Allow paste access to use Paste') : console.warn('paste denied'); } catch (e) { }; } },
   fs: () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(),
   settings: () => settings(),
   setx: () => closeSettings(),
