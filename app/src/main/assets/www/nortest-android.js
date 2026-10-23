@@ -5,6 +5,7 @@
   var N = window.NortestNative;
   if (!N) return;
   document.documentElement.classList.add('is-android-app');
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 
   var st = document.createElement('style');
   st.textContent = '#installBtn,#iosTip{display:none!important}';

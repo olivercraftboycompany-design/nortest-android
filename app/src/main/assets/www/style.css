@@ -475,3 +475,8 @@ body.cols3 .card b{font-size:14px}body.cols3 .card span{font-size:12px}
 .fab.small{padding:0 16px}
 .fab.small span:last-child{max-width:0;opacity:0;margin-left:-10px}
 .row .ph{padding:0 5px;margin-right:4px;font-size:10px}
+
+/* 1.7: Apple-style liquid glass pass */
+.card,#menu,.chip,.btn.tonal,.sbar,.mrow{backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);}
+.card,#menu{border-radius:24px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 32px rgba(0,0,0,.35);}
+.chip{border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);}

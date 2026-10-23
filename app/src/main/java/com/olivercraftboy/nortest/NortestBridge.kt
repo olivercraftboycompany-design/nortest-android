@@ -34,6 +34,20 @@ class NortestBridge(private val activity: MainActivity) {
     @JavascriptInterface
     fun checkForUpdates() = activity.checkForUpdatesFromPage()
 
+    /** Share what's playing through the Android share sheet. */
+    @JavascriptInterface
+    fun shareNowPlaying(title: String?, artist: String?) {
+        val text = "Now playing: ${title.orEmpty()}" +
+            (if (!artist.isNullOrBlank()) " by $artist" else "") + " on Nortest"
+        activity.runOnUiThread {
+            val i = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(android.content.Intent.EXTRA_TEXT, text)
+            }
+            activity.startActivity(android.content.Intent.createChooser(i, "Share what's playing"))
+        }
+    }
+
     @JavascriptInterface
     fun setMetadata(title: String?, artist: String?, album: String?, durationMs: Double) {
         PlayerHub.updateTrack(

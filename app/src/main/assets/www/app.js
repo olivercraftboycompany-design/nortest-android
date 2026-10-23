@@ -544,9 +544,9 @@ Object.assign(A, {
     const s = byId(id), r = b.getBoundingClientRect(), m = $('#menu');
     const it = [['Play next', 'qnext'], ['Add to queue', 'qadd'],
     ...(queue.includes(id) ? [['Remove from queue', 'qrmid']] : []),
-    [s.fav ? 'Remove from favorites' : 'Add to favorites', 'fav'], ['Edit details', 'edit'], ['Add to playlist', 'topl'],
+    [s.fav ? 'Remove from favorites' : 'Add to favorites', 'fav'], ['Edit details', 'edit'], ['Add to playlist', 'topl'], ['Share', 'share'],
     ...(view === 'playlists' && sub ? [['Remove from this playlist', 'prm']] : []), s.device ? ['Hide from library', 'dhide'] : ['Delete song', 'sdel']];
-    const MI = { qnext: 'play_next', qadd: 'queue_music', qrmid: 'playlist_remove', fav: 'favorite', edit: 'edit', topl: 'playlist_add', prm: 'playlist_remove', dhide: 'eye_off', sdel: 'trash' };
+    const MI = { qnext: 'play_next', qadd: 'queue_music', qrmid: 'playlist_remove', fav: 'favorite', edit: 'edit', topl: 'playlist_add', share: 'share', prm: 'playlist_remove', dhide: 'eye_off', sdel: 'trash' };
     m.innerHTML = `<div class="mh"><img src="${cover(s)}" alt=""><div><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div></div>` + it.map(([t, a]) => `<button data-a="${a}" data-id="${id}" class="mx-${a}">${mi(MI[a] || 'add', a === 'fav' && s.fav)}<span>${t}</span></button>`).join('');
     m.classList.remove('hid');
     m.style.top = Math.max(8, Math.min(r.bottom, innerHeight - m.offsetHeight - 8)) + 'px';
@@ -555,6 +555,10 @@ Object.assign(A, {
   qadd: (b, id) => { queue.push(id); qi < 0 ? load(0, false) : refreshQ(); },
   qnext: (b, id) => { queue.splice(qi + 1, 0, id); qi < 0 ? load(0, false) : refreshQ(); },
   qrmid: (b, id) => removeQ(queue.indexOf(id)),
+  share: (b, id) => { const s = byId(id) || cur; if (!s) return;
+    const t = s.title || 'A song', a = s.artist || 'unknown artist';
+    if (window.NortestNative && NortestNative.shareNowPlaying) NortestNative.shareNowPlaying(t, a);
+    else if (navigator.share) navigator.share({ title: t, text: t + ' by ' + a }).catch(() => {}); },
   qplay: b => load(+b.dataset.i),
   qrm: b => removeQ(+b.closest('[data-i]').dataset.i),
   qup: b => { const i = +b.closest('[data-i]').dataset.i; moveQ(i, i - 1); },
