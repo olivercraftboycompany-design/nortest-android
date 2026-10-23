@@ -476,10 +476,20 @@ body.cols3 .card b{font-size:14px}body.cols3 .card span{font-size:12px}
 .fab.small span:last-child{max-width:0;opacity:0;margin-left:-10px}
 .row .ph{padding:0 5px;margin-right:4px;font-size:10px}
 
-/* 1.7: Apple-style liquid glass pass */
-.card,#menu,.chip,.btn.tonal,.sbar,.mrow{backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);}
-.card,#menu{border-radius:24px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 32px rgba(0,0,0,.35);}
-.chip{border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);}
+/* 1.8.1: refined glass pass, tinted from the theme's own roles so album-art recoloring still works */
+.btn.tonal,.chip,#menu,.fab,.sbar{-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5)}
+.btn.tonal,.chip,.sbar{background:color-mix(in srgb,var(--md-surface-container-high) 72%,transparent);border:1px solid color-mix(in srgb,var(--md-outline-variant) 60%,transparent)}
+.chip{border-radius:999px}
+.chip:active{border-radius:12px}
+#menu{background:color-mix(in srgb,var(--md-surface-container) 82%,transparent);border:1px solid color-mix(in srgb,var(--md-outline-variant) 45%,transparent);border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+#menu button{border-radius:14px;margin:0 8px;width:calc(100% - 16px)}
+#menu button:active{background:color-mix(in srgb,var(--md-on-surface) 10%,transparent)}
+.fab{background:color-mix(in srgb,var(--md-primary-container) 85%,transparent);border-radius:999px}
+.fab:active{border-radius:28px}
+.btn{box-shadow:inset 0 1px 0 rgba(255,255,255,.10)}
+.btn.pri{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 2px 10px color-mix(in srgb,var(--md-primary) 25%,transparent)}
+.btn:active{filter:brightness(1.08)}
+@supports not (backdrop-filter:blur(1px)){.btn.tonal,.chip,#menu,.fab,.sbar{background:var(--md-surface-container-high)}}
 
 /* ---- nortest 1.8.0: Wrapped, Listen Together, Albums ---- */
 .wtph{padding:6px 0 16px;text-align:center}
